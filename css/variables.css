@@ -1,0 +1,378 @@
+/* ==========================================================================
+   Little Plate · design tokens
+   Source of truth: Figma "Mood board" → Design System · Parents Planner v1.2
+   (Option 6: Curry leaf fresh). Values copied from the Figma variables (PP/*).
+   Rule from the DS: 60% rice white and herb neutrals, 30% surfaces and
+   jaggery notes, 10% curry leaf green for the one action that matters.
+   Older token names are kept as aliases so every screen picks up the new look.
+   ========================================================================== */
+
+:root {
+  /* ---- Primitives · Option 6 ---- */
+  --curryleaf-50: #eef6ef;
+  --curryleaf-100: #e6f1e8;
+  --curryleaf-600: #2e6b3f;
+  --curryleaf-700: #245632;
+  --curryleaf-800: #1b4226;
+  --ricewhite-0: #fafaf5;
+  --ricewhite-50: #f1f3ee;
+  --herb-200: #e1e6dd;
+  --herb-300: #b9c3ba;
+  --herb-400: #a3aea5;
+  --herb-500: #788679;
+  --herb-600: #5a6a5e;
+  --herb-700: #4a5a4e;
+  --herb-900: #1c2a20;
+  --jaggery-50: #fdf1e4;
+  --jaggery-100: #fdebd8;
+  --jaggery-200: #f4d6b4;
+  --jaggery-500: #a86a1e;
+  --jaggery-600: #9a4a1c;
+  --jaggery-700: #7a3e12;
+  --tomato-500: #e4572e;
+  --chilli-50: #fdecea;
+  --chilli-100: #f8cfca;
+  --chilli-500: #c4382b;
+  --chilli-600: #a82e23;
+  --chilli-700: #86241b;
+  --chilli-allergy: #b3261e;
+  --sky-50: #ebf3fa;
+  --sky-100: #d2e4f3;
+  --sky-500: #3d6f9e;
+  --sky-600: #2f5a84;
+  --sky-700: #244666;
+  --white: #ffffff;
+  --wheat: #e8c98e;           /* the roti in the logo: kept, it is the brand character */
+
+  /* ---- Legacy names → Option 6 (used across components) ---- */
+  --leaf-50: var(--curryleaf-50);
+  --leaf-100: var(--curryleaf-100);
+  --leaf-600: var(--curryleaf-600);
+  --leaf-700: var(--curryleaf-700);
+  --leaf-800: var(--curryleaf-800);
+  --cream-0: var(--ricewhite-0);
+  --cream-50: var(--ricewhite-50);
+  --ink-200: var(--herb-200);
+  --ink-300: var(--herb-300);
+  --ink-400: var(--herb-400);
+  --ink-500: var(--herb-500);
+  --ink-600: var(--herb-600);
+  --ink-700: var(--herb-700);
+  --ink-900: var(--herb-900);
+  --haldi-50: var(--jaggery-50);
+  --haldi-100: var(--jaggery-100);
+  --haldi-200: var(--jaggery-200);
+  --haldi-500: var(--jaggery-500);
+  --haldi-600: var(--jaggery-600);
+  --haldi-700: var(--jaggery-700);
+  --lunch-100: var(--curryleaf-50);
+  --lunch-700: var(--curryleaf-700);
+  --snack-100: var(--jaggery-100);
+  --snack-700: var(--jaggery-700);
+  --plum-100: var(--sky-50);
+  --plum-700: var(--sky-700);
+
+  /* ---- Fonts: Poppins SemiBold titles, Hind body (both cover Devanagari) ---- */
+  --font-title: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Hind", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* ---- Type scale (PP/* text styles) ---- */
+  --fs-display: 32px;  --lh-display: 40px;  --ls-display: 0;
+  --fs-title-l: 28px;  --lh-title-l: 36px;  --ls-title-l: 0;
+  --fs-title-m: 22px;  --lh-title-m: 30px;  --ls-title-m: 0;
+  --fs-title-s: 20px;  --lh-title-s: 28px;
+  --fs-body-l: 17px;   --lh-body-l: 26px;
+  --fs-body-m: 15px;   --lh-body-m: 22px;
+  --fs-caption: 13px;  --lh-caption: 18px;
+  --fs-label: 13px;    --lh-label: 18px;    --ls-label: 0.06em;
+  --fs-button: 17px;   --lh-button: 22px;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* ---- Space (4 px base, 8 px rhythm) ---- */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-card: 18px;
+  --radius-chip: 24px;
+  --radius-button: 28px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ---- Sizes ---- */
+  --size-screen-w: 402px;
+  --size-screen-h: 874px;
+  --size-status-bar: 54px;
+  --size-top-bar: 56px;
+  --size-touch: 44px;
+  --size-button-l: 52px;
+  --size-button-m: 44px;
+  --size-chip: 44px;
+  --size-input: 56px;
+  --size-row: 64px;
+  --size-otp: 52px;
+  --size-icon: 24px;
+  --size-icon-chip: 20px;
+  --size-icon-empty: 32px;
+  --size-grabber-w: 36px;
+  --size-grabber-h: 5px;
+  --size-home-indicator: 34px;
+  --stroke-focus: 3px;
+
+  /* ---- Motion ---- */
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --dur-toast: 2500ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --press-scale: 0.97;
+
+  /* ---- Elevation (PP/Elevation/*) ---- */
+  --elev-card: 0 1px 3px rgba(43, 38, 34, 0.06);
+  --elev-sheet: 0 -4px 24px rgba(43, 38, 34, 0.12);
+  --elev-toast: 0 8px 24px rgba(43, 38, 34, 0.18);
+  --elev-frame: 0 30px 80px rgba(28, 42, 32, 0.22), 0 0 0 10px #18201a, 0 0 0 11px #3a453c;
+
+  /* ---- WhatsApp mock (L04 · outside the app, not our brand) ---- */
+  --wa-bg: #efe7de;
+  --wa-green: #0b6b5b;
+  --wa-avatar: #d9d4cc;
+  --wa-ink: #1f1f1f;
+  --wa-preview: #f1f2f4;
+  --wa-mute: #667781;
+  --wa-link: #027eb5;
+  --wa-white: #ffffff;
+  --wa-hint: rgba(255, 255, 255, 0.7);
+
+  /* ---- Page (outside the phone; not themed) ---- */
+  --page-bg: #e6ebe4;
+  --page-ink: #4a5a4e;
+}
+
+/* ==========================================================================
+   Semantic tokens — light (Option 6). Scoped to the phone root.
+   ========================================================================== */
+.phone {
+  --bg-app: var(--ricewhite-0);
+  --bg-surface: var(--white);
+  --bg-sunken: var(--ricewhite-50);
+  --bg-inverse: var(--herb-900);
+  --bg-scrim: rgba(28, 42, 32, 0.48);
+
+  --text-primary: var(--herb-900);
+  --text-secondary: var(--herb-700);
+  --text-tertiary: var(--herb-600);
+  --text-disabled: var(--herb-400);
+  --text-on-brand: var(--white);
+  --text-link: var(--curryleaf-700);
+  --text-inverse: var(--white);
+
+  --border-subtle: var(--herb-200);
+  --border-control: var(--herb-500);
+  --border-strong: var(--herb-900);
+  --border-focus: var(--herb-900);
+
+  --brand-primary: var(--curryleaf-600);
+  --brand-primary-pressed: var(--curryleaf-700);
+  --brand-primary-subtle: var(--curryleaf-100);
+  --brand-on-subtle: var(--curryleaf-800);
+
+  --note-bg: var(--jaggery-100);
+  --note-border: var(--jaggery-200);
+  --note-icon: var(--jaggery-600);
+  --success-fg: var(--curryleaf-700);
+  --success-bg: var(--curryleaf-50);
+  --success-icon: var(--curryleaf-600);
+  --warning-fg: var(--jaggery-700);
+  --warning-bg: var(--jaggery-50);
+  --error-fg: var(--chilli-allergy);
+  --error-bg: var(--chilli-50);
+  --error-border: var(--chilli-allergy);
+  --error-icon: var(--chilli-allergy);
+  --info-fg: var(--sky-700);
+  --info-bg: var(--sky-50);
+  --info-icon: var(--sky-600);
+
+  /* Controls: chips are outlined on white (DS · Chip), selected = curry leaf */
+  --toggle-off: var(--herb-500);
+  --toggle-thumb: var(--white);
+  --chip-bg: var(--white);
+  --chip-bg-pressed: var(--ricewhite-50);
+  --chip-border: var(--herb-300);
+  --seg-track: var(--ricewhite-50);
+  --seg-thumb: var(--white);
+  --skeleton: var(--ricewhite-50);
+  --tile-icon-bg: var(--jaggery-50);
+  --tile-icon-fg: var(--jaggery-700);
+  --icon-btn-bg: var(--ricewhite-50);
+
+  /* Logo (A6 roti on a rice-white plate, ink rim, tomato cheeks at 55%) */
+  --logo-plate: var(--ricewhite-0);
+  --logo-rim: var(--herb-900);
+  --logo-inner-rim: var(--herb-300);
+  --logo-roti: var(--wheat);
+  --logo-face: var(--herb-900);
+  --logo-cheek: var(--tomato-500);
+
+  --chrome-ink: var(--herb-900);
+
+  /* Meals: calm, neutral badges; the icon shape tells the meal (never colour alone) */
+  --meal-breakfast-bg: var(--jaggery-50);
+  --meal-breakfast-fg: var(--jaggery-700);
+  --meal-lunch-bg: var(--curryleaf-50);
+  --meal-lunch-fg: var(--curryleaf-700);
+  --meal-snack-bg: var(--jaggery-100);
+  --meal-snack-fg: var(--jaggery-600);
+  --meal-dinner-bg: var(--sky-50);
+  --meal-dinner-fg: var(--sky-700);
+
+  /* Outcomes (outcome/*) */
+  --outcome-well: var(--curryleaf-600);
+  --outcome-some: var(--jaggery-500);
+  --outcome-not: var(--herb-500);
+  --outcome-none: var(--herb-300);
+
+  /* Phulka discs: a refusal is not an error → neutral and jaggery, never red */
+  --phulka-happy: var(--curryleaf-50);
+  --phulka-calm: var(--jaggery-50);
+  --phulka-thinking: var(--ricewhite-50);
+  --phulka-searching: var(--jaggery-100);
+  --phulka-saved: var(--curryleaf-100);
+
+  --start-family-bg: var(--white);
+  --start-home-bg: var(--white);
+  --sand: var(--ricewhite-50);
+  --highlight: var(--jaggery-50);
+
+  /* ---- Aliases required by the master prompt ---- */
+  --bg-card: var(--bg-surface);
+  --bg-pill: var(--chip-bg);
+  --ink: var(--text-primary);
+  --ink-soft: var(--text-secondary);
+  --ink-mute: var(--text-tertiary);
+  --ink-faint: var(--text-disabled);
+  --line: var(--border-subtle);
+  --line-strong: var(--border-control);
+  --accent: var(--brand-primary);
+  --accent-ink: var(--text-on-brand);
+  --accent-soft: var(--brand-primary-subtle);
+  --success: var(--success-icon);
+  --success-soft: var(--success-bg);
+  --r-xs: var(--radius-sm);
+  --r-sm: var(--radius-md);
+  --r-md: var(--radius-lg);
+  --r-lg: var(--radius-card);
+  --r-xl: var(--radius-button);
+  --r-pill: var(--radius-full);
+
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Dark theme — DERIVED (the DS says dark mode is not in v1; tokens are named
+   by role so this can be replaced by an official mode later).
+   ========================================================================== */
+.phone[data-theme="dark"] {
+  --bg-app: #121814;
+  --bg-surface: #1b231d;
+  --bg-sunken: #232d25;
+  --bg-inverse: #eef6ef;
+  --bg-scrim: rgba(0, 0, 0, 0.6);
+
+  --text-primary: #eef3ee;
+  --text-secondary: #c9d3ca;
+  --text-tertiary: #a6b3a8;
+  --text-disabled: #6f7d72;
+  --text-on-brand: #ffffff;
+  --text-link: #9bd3ad;
+  --text-inverse: #1c2a20;
+
+  --border-subtle: #2f3b32;
+  --border-control: #7f8d82;
+  --border-strong: #eef3ee;
+  --border-focus: #eef3ee;
+
+  --brand-primary: #3a8250;
+  --brand-primary-pressed: #2e6b3f;
+  --brand-primary-subtle: #1f3a28;
+  --brand-on-subtle: #c8ead2;
+
+  --note-bg: #3a2a18;
+  --note-border: #6b4a20;
+  --note-icon: #f0b27a;
+  --success-fg: #a9dcb8;
+  --success-bg: #1a2e21;
+  --success-icon: #9bd3ad;
+  --warning-fg: #f3c79a;
+  --warning-bg: #33261a;
+  --error-fg: #ff9d92;
+  --error-bg: #3b1f1b;
+  --error-border: #ef7a6e;
+  --error-icon: #ff9d92;
+  --info-fg: #b9d5ef;
+  --info-bg: #1b2a38;
+  --info-icon: #8fbbe3;
+
+  --toggle-off: #6f7d72;
+  --toggle-thumb: #fafaf5;
+  --chip-bg: #1b231d;
+  --chip-bg-pressed: #263028;
+  --chip-border: #3d4a40;
+  --seg-track: #232d25;
+  --seg-thumb: #3a473d;
+  --skeleton: #232d25;
+  --tile-icon-bg: #33261a;
+  --tile-icon-fg: #f3c79a;
+  --icon-btn-bg: #263028;
+
+  --logo-plate: #fafaf5;
+  --logo-rim: #1c2a20;
+  --logo-inner-rim: #b9c3ba;
+  --logo-roti: #e8c98e;
+  --logo-face: #1c2a20;
+  --logo-cheek: #e4572e;
+
+  --chrome-ink: #eef3ee;
+
+  --meal-breakfast-bg: #33261a;
+  --meal-breakfast-fg: #f3c79a;
+  --meal-lunch-bg: #1a2e21;
+  --meal-lunch-fg: #a9dcb8;
+  --meal-snack-bg: #3a2a18;
+  --meal-snack-fg: #f0b27a;
+  --meal-dinner-bg: #1b2a38;
+  --meal-dinner-fg: #b9d5ef;
+
+  --outcome-well: #9bd3ad;
+  --outcome-some: #f0b27a;
+  --outcome-not: #a6b3a8;
+  --outcome-none: #4a564d;
+
+  --phulka-happy: #1a2e21;
+  --phulka-calm: #33261a;
+  --phulka-thinking: #232d25;
+  --phulka-searching: #3a2a18;
+  --phulka-saved: #1f3a28;
+
+  --start-family-bg: #1b231d;
+  --start-home-bg: #1b231d;
+  --sand: #232d25;
+  --highlight: #33261a;
+}

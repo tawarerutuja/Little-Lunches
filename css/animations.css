@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Named keyframes + route-transition classes
+   ========================================================================== */
+
+/* ---- Route transitions (router adds these) ---- */
+.route-in-forward  { animation: route-in-right var(--dur-slow) var(--ease-out) both; z-index: 2; }
+.route-out-forward { animation: route-out-left var(--dur-slow) var(--ease-out) both; z-index: 1; }
+.route-in-back     { animation: route-in-left var(--dur-slow) var(--ease-out) both; z-index: 1; }
+.route-out-back    { animation: route-out-right var(--dur-slow) var(--ease-out) both; z-index: 2; }
+.route-in-fade     { animation: fade-in var(--dur-slow) var(--ease-std) both; z-index: 2; }
+.route-out-fade    { animation: fade-out var(--dur-base) var(--ease-std) both; z-index: 1; }
+
+@keyframes route-in-right  { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes route-out-left  { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-28%); opacity: 0.6; } }
+@keyframes route-in-left   { from { transform: translateX(-28%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+@keyframes route-out-right { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* Content that rises in after a route lands (staggered with --i) */
+.rise { animation: rise var(--dur-slow) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 50ms + 80ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ---- Micro-interactions ---- */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { to { transform: translateX(100%); } }
+@keyframes caret { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+@keyframes pop { 0% { transform: scale(0.96); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes check-pop { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes chip-in { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes msg-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes mic-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(31, 92, 63, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba(31, 92, 63, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(31, 92, 63, 0); }
+}
+@keyframes toast-in  { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px); } }
+@keyframes banner-in  { from { opacity: 0; transform: translateY(-120%); } to { opacity: 1; transform: none; } }
+@keyframes banner-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-120%); } }
+
+/* ---- Splash: the plate is set, the roti lands, Phulka smiles ---- */
+.splash .logo__plate      { transform-box: fill-box; transform-origin: center; animation: plate-in 520ms var(--ease-out) both; }
+.splash .logo__rim        { stroke-dasharray: 360; stroke-dashoffset: 360; animation: draw 640ms var(--ease-std) 80ms forwards; }
+.splash .logo__inner-rim  { stroke-dasharray: 280; stroke-dashoffset: 280; animation: draw 560ms var(--ease-std) 260ms forwards; }
+.splash .logo__roti       { transform-box: fill-box; transform-origin: center; animation: roti-drop 620ms var(--ease-spring) 420ms both; }
+.splash .logo__face       { animation: fade-in 260ms var(--ease-std) 860ms both; }
+.splash .logo__eyes       { transform-box: fill-box; transform-origin: center; animation: blink 260ms var(--ease-std) 1380ms 1 both; }
+.splash .logo__cheek      { animation: cheek 420ms var(--ease-out) 1000ms both; }
+.splash__word             { animation: rise 420ms var(--ease-out) 700ms both; }
+.splash__tag              { animation: rise 420ms var(--ease-out) 860ms both; }
+.splash.is-leaving        { animation: splash-out 300ms var(--ease-in) both; }
+
+@keyframes plate-in { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes roti-drop {
+  0% { transform: translateY(-18px) rotate(-25deg) scale(0.6); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes blink { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
+@keyframes cheek { from { opacity: 0; } to { opacity: 0.55; } }
+@keyframes splash-out { to { opacity: 0; transform: scale(1.02); } }
+
+/* Reduced motion: sheets fade instead of slide (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  .sheet { transform: none !important; opacity: 0; transition: opacity 0.01ms; }
+  .sheet-layer.is-open .sheet { opacity: 1; }
+  .splash .logo__rim, .splash .logo__inner-rim { stroke-dashoffset: 0; }
+  .splash .logo__cheek { opacity: 0.55; }
+}
+
+/* ==========================================================================
+   Phulka moods (Figma: Mascot · Meet Phulka, money shots)
+   Only at peak moments; under 600 ms except the calm breathing.
+   ========================================================================== */
+/* Happy: puff 1 -> 1.08 -> 1 in 420 ms, one steam wisp rises */
+.phulka--happy.is-animated .phulka__roti { animation: phulka-puff 420ms var(--ease-spring) 120ms both; }
+.phulka--happy.is-animated .phulka__wisp--2 { animation: wisp 1100ms var(--ease-out) 380ms both; }
+
+/* Saved: puff 1 -> 1.1 -> 1 with an 8 px hop, one wisp */
+.phulka--saved.is-animated .phulka__body { animation: phulka-hop 420ms var(--ease-spring) 200ms both; }
+.phulka--saved.is-animated .phulka__wisp--2 { animation: wisp 1100ms var(--ease-out) 480ms both; }
+
+/* Calm: breathing 1 -> 1.03 over 3 s, loops. No bounce, never red. */
+.phulka--calm.is-animated .phulka__body { animation: phulka-breathe 3s var(--ease-std) infinite; }
+
+/* Thinking: tilt +-6 deg every 300 ms, eyes glance, wisps rise in turn like loading dots */
+.phulka--thinking.is-animated .phulka__body { animation: phulka-tilt 1200ms var(--ease-std) infinite; }
+.phulka--thinking.is-animated .phulka__eyes { animation: phulka-glance 1200ms var(--ease-std) infinite; }
+.phulka--thinking.is-animated .phulka__wisp { animation: wisp-dots 1200ms var(--ease-std) infinite; }
+.phulka--thinking.is-animated .phulka__wisp--2 { animation-delay: 200ms; }
+.phulka--thinking.is-animated .phulka__wisp--3 { animation-delay: 400ms; }
+
+/* Searching: the magnifier sweeps once across the plate in 600 ms, then rests */
+.phulka--searching.is-animated .phulka__glass { animation: phulka-sweep 600ms var(--ease-out) 200ms both; }
+.phulka--searching.is-animated .phulka__eyes { animation: phulka-look 600ms var(--ease-out) 200ms both; }
+
+@keyframes phulka-puff { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes phulka-hop { 0% { transform: translateY(0) scale(1); } 45% { transform: translateY(-8px) scale(1.1); } 100% { transform: translateY(0) scale(1); } }
+@keyframes phulka-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@keyframes phulka-tilt { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+@keyframes phulka-glance { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+@keyframes phulka-sweep { 0% { transform: translate(-46px, -40px) rotate(-20deg); opacity: 0.6; } 100% { transform: none; opacity: 1; } }
+@keyframes phulka-look { 0% { transform: translate(-3px, -2px); } 100% { transform: none; } }
+@keyframes wisp { 0% { opacity: 0; transform: translateY(6px); } 40% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-10px); } }
+@keyframes wisp-dots { 0%, 100% { opacity: 0.2; transform: translateY(0); } 50% { opacity: 0.9; transform: translateY(-4px); } }
+
+/* ---------- Splash: rim draws, roti drops, puffs like a phulka, steam, word ---------- */
+.splash .logo__roti { animation: roti-drop 300ms var(--ease-out) 300ms both, phulka-splash-puff 400ms var(--ease-spring) 600ms both; }
+.splash .logo__steam path { opacity: 0; animation: wisp 900ms var(--ease-out) 1000ms both; }
+.splash .logo__steam path + path { animation-delay: 1120ms; }
+.splash__word { animation-delay: 1000ms; }
+.splash__tag { animation-delay: 1120ms; }
+@keyframes phulka-splash-puff { 0% { transform: scale(1); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+/* ---------- Voice wave, lock screen, changed-row flash ---------- */
+@keyframes wave { 0%, 100% { height: 12px; } 50% { height: 48px; } }
+@keyframes lock-out { to { opacity: 0; transform: translateY(-24px); } }
+.is-flash { animation: row-flash 1600ms var(--ease-std) both; }
+@keyframes row-flash { 0%, 40% { background: var(--highlight); } 100% { background: transparent; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .phulka__wisp { opacity: 0 !important; }
+  .listen__wave span { height: 20px; }
+}
