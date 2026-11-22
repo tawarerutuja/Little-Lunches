@@ -1,0 +1,176 @@
+/* ==========================================================================
+   Base: page, phone frame, status bar, home indicator, theme shell
+   ========================================================================== */
+
+body {
+  background: var(--page-bg);
+  color: var(--page-ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-body-l);
+  overflow: hidden;
+}
+
+.stage {
+  min-height: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: var(--space-24);
+}
+
+/* ---- Phone root (theme scope) ---- */
+.phone {
+  --status-h: var(--size-status-bar);
+  --home-h: var(--size-home-indicator);
+  position: relative;
+  width: var(--size-screen-w);
+  height: var(--size-screen-h);
+  flex: none;
+  overflow: hidden;
+  border-radius: 54px;
+  background: var(--bg-app);
+  box-shadow: var(--elev-frame);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-body-l);
+  transform-origin: center center;
+  isolation: isolate;
+  transition: background-color var(--dur-base) var(--ease-std);
+}
+
+/* ---- Mock status bar (framed mode only) ---- */
+.status-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--size-status-bar);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 34px 0 50px;
+  color: var(--chrome-ink);
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-std);
+}
+.status-bar__time {
+  font-family: -apple-system, "SF Pro Text", "Segoe UI", var(--font-body);
+  font-weight: var(--fw-semibold);
+  font-size: 17px;
+  letter-spacing: -0.2px;
+}
+.status-bar__icons { display: flex; align-items: center; gap: 6px; }
+.status-bar__icons svg { height: 12px; width: auto; }
+.status-bar.is-dimmed { opacity: 0.35; }
+
+/* ---- Home indicator ---- */
+.home-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 134px;
+  height: 5px;
+  margin-left: -67px;
+  border-radius: var(--radius-full);
+  background: var(--chrome-ink);
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* ---- Viewport that hosts the screen stack ---- */
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+/* ---- Prototype tools (outside the phone, desktop only) ---- */
+.proto-tools {
+  position: fixed;
+  right: var(--space-20);
+  bottom: var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  align-items: stretch;
+  font-family: var(--font-body);
+  z-index: 100;
+}
+.proto-tools__label {
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-600);
+}
+.proto-tools__note { font-size: var(--fs-body-m); color: var(--ink-700); }
+.proto-tools__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--size-touch);
+  padding: 0 var(--space-16);
+  border-radius: var(--radius-full);
+  background: var(--cream-0);
+  color: var(--ink-900);
+  border: 1px solid var(--ink-300);
+  font-size: var(--fs-body-m);
+  font-weight: var(--fw-semibold);
+  transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast);
+}
+.proto-tools__btn svg { width: 20px; height: 20px; }
+.proto-tools__btn:hover { background: var(--white); }
+.proto-tools__btn:active { transform: scale(var(--press-scale)); }
+.proto-tools__btn:focus-visible { outline: var(--stroke-focus) solid var(--ink-900); outline-offset: 2px; }
+/* More switches now: the panel scrolls rather than running off a short window. */
+.proto-tools { max-height: calc(100vh - 40px); overflow-y: auto; padding: 2px; width: 248px; }
+.proto-tools__btn { min-height: 40px; }
+.proto-tools__label--gap { margin-top: var(--space-8); }
+.proto-tools__state { margin-left: auto; font-size: var(--fs-caption); font-weight: var(--fw-semibold); color: var(--ink-600); }
+.proto-tools__btn--toggle[aria-pressed="true"] { background: var(--error-bg); border-color: var(--error-border); color: var(--error-fg); }
+.proto-tools__btn--toggle[aria-pressed="true"] .proto-tools__state { color: var(--error-fg); }
+
+/* ==========================================================================
+   Narrow screens: drop the frame, fill the viewport, honour safe areas
+   ========================================================================== */
+@media (max-width: 519px) {
+  .stage { padding: 0; display: block; }
+  .phone {
+    --status-h: max(env(safe-area-inset-top), 12px);
+    --home-h: max(env(safe-area-inset-bottom), 16px);
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none !important;
+  }
+  .status-bar, .home-indicator { display: none; }
+  .proto-tools { display: none; }
+}
+
+/* Framed mode: pin the phone to the centre of the window. JS adds a
+   scale() so it always fits, even at browser zoom above 100 %. */
+@media (min-width: 520px) {
+  .stage { position: relative; display: block; padding: 0; }
+  .phone {
+    position: absolute;
+    top: 50%;
+    left: var(--phone-x, 50%);
+    transform: translate(-50%, -50%) scale(var(--fit, 1));
+  }
+  /* Docked: the panel has its own column, vertically centred, scrolling if tall. */
+  .tools-side .proto-tools { top: 50%; bottom: auto; transform: translateY(-50%); }
+  .proto-toggle { display: none; }
+  /* Narrow windows: the panel folds into one button and opens over the page only on request. */
+  body:not(.tools-side) .proto-tools { display: none; }
+  body:not(.tools-side).tools-open .proto-tools { display: flex; width: 276px; bottom: 76px; background: var(--page-bg); border-radius: var(--radius-lg); padding: var(--space-12); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18); }
+  body:not(.tools-side) .proto-toggle {
+    display: inline-flex; align-items: center; gap: var(--space-8); position: fixed; right: var(--space-20); bottom: var(--space-20); z-index: 101;
+    min-height: 44px; padding: 0 var(--space-16); border-radius: var(--radius-full); background: var(--ink-900); color: var(--white);
+    font-family: var(--font-body); font-size: var(--fs-body-m); font-weight: var(--fw-semibold);
+  }
+  .proto-toggle svg { width: 18px; height: 18px; }
+}
