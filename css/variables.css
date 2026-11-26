@@ -256,8 +256,8 @@
   --phulka-searching: var(--jaggery-100);
   --phulka-saved: var(--curryleaf-100);
 
-  --start-family-bg: var(--white);
-  --start-home-bg: var(--white);
+  --start-family-bg: var(--jaggery-50);   /* T01: cooking = warm jaggery */
+  --start-home-bg: var(--curryleaf-50);   /* T01: pantry = curry leaf */
   --sand: var(--ricewhite-50);
   --highlight: var(--jaggery-50);
 
@@ -371,8 +371,8 @@
   --phulka-searching: #3a2a18;
   --phulka-saved: #1f3a28;
 
-  --start-family-bg: #1b231d;
-  --start-home-bg: #1b231d;
+  --start-family-bg: #2e2418;
+  --start-home-bg: #1b2a20;
   --sand: #232d25;
   --highlight: #33261a;
 }

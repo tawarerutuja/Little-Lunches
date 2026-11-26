@@ -573,8 +573,6 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 
 /* ---------- Section header (sub-title + helper) ---------- */
 .section { margin-top: var(--space-24); }
-.section__title { margin-bottom: 2px; }
-.section__help { font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); margin-bottom: var(--space-12); }
 
 /* ---------- Notes and alerts ---------- */
 .note {
@@ -1015,7 +1013,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 
 .icon-tile { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); }
 .icon-tile svg { width: 22px; height: 22px; }
-.icon-tile--neutral { background: var(--chip-bg); color: var(--text-secondary); }
+.icon-tile--neutral { background: var(--bg-sunken); color: var(--text-secondary); } /* visible on white cards */
 .icon-tile--leaf { background: var(--success-bg); color: var(--success-icon); }
 .icon-tile--allergy { background: var(--error-bg); color: var(--error-icon); }
 .icon-tile--breakfast { background: var(--meal-breakfast-bg); color: var(--meal-breakfast-fg); }
@@ -1248,3 +1246,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 .month-grid .chip { padding: 0 var(--space-24); }
 .month-grid .chip__mark { position: absolute; left: var(--space-8); top: 50%; transform: translateY(-50%); display: flex; }
 .month-grid .chip__mark svg { width: 16px; height: 16px; }
+
+/* Round 15 · Form sections: one page title + lead, then quiet labels (no stacked headings) */
+.form-section { margin-top: var(--space-32); }
+.form-section__label { margin-bottom: var(--space-12); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); text-transform: uppercase; font-weight: var(--fw-semibold); color: var(--text-secondary); }

@@ -67,8 +67,8 @@
 .allergy-summary .note--error { box-shadow: none; }
 
 /* ---------- W06 Family food ---------- */
-.family__diet { margin-top: var(--space-20); }
-.family__tiles { margin-top: var(--space-16); }
+.family__diet { margin-top: 0; }
+.family__tiles { margin-top: 0; }
 
 /* ---------- W07 Foods he eats ---------- */
 .foods__chips { margin-top: var(--space-20); }
@@ -502,23 +502,8 @@
 /* ==========================================================================
    Today · one connected dinner card (round 5)
    ========================================================================== */
-.dinner { padding: var(--space-16); margin-top: var(--space-24); }
-.dinner__head .t-title-m { margin-top: var(--space-4); }
-.dinner__starts { margin-top: var(--space-12); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 0 var(--space-12); background: var(--bg-surface); }
-.dinner .start-card { background: transparent; border-radius: 0; min-height: 72px; padding: var(--space-12) 0; box-shadow: none; }
-.dinner .start-card + .start-card { border-top: 1px solid var(--border-subtle); }
-.dinner .start-card__art { width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--success-bg); color: var(--success-icon); }
-.dinner .start-card__art svg { width: 22px; height: 22px; }
-.dinner .start-card__title { font-family: var(--font-body); font-size: var(--fs-body-l); line-height: 24px; font-weight: var(--fw-semibold); }
-.dinner .start-card:active { transform: none; background: var(--bg-sunken); }
-.dinner .start-card[aria-disabled="true"] .start-card__art { background: var(--bg-sunken); color: var(--text-disabled); }
-/* "or" divider ties the two halves together */
 
-.dinner__none { margin-top: var(--space-8); }
-.dinner__none svg { width: 18px; height: 18px; }
-.dinner__empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); }
-.dinner__empty-title { font-weight: var(--fw-semibold); font-size: var(--fs-body-l); }
-.today .screen__scroll > .dinner:first-child { margin-top: var(--space-8); }
+/* "or" divider ties the two halves together */
 
 /* Edge cases: unsafe planned meal, long names */
 .tag--danger { background: var(--error-bg); color: var(--error-fg); }
@@ -562,8 +547,6 @@
 .variety__name { font-weight: var(--fw-semibold); font-size: var(--fs-body-m); }
 
 /* Round 8 · Today's planned meal: Make this · [Swap] [Ask] · More ways to decide */
-.feature__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8); width: 100%; margin-top: var(--space-8); }
-.feature__actions .btn { width: 100%; }
 
 /* Round 9 · Tonight's head start: one small step per planned meal for tomorrow */
 .prep-card__list { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-12); }
@@ -584,13 +567,44 @@
 
 /* Round 12 · "More ways to decide" sheet reuses the start rows, without the card frame */
 
-.dinner .dinner__empty { margin-top: var(--space-16); }
-
 /* Round 13 · One connected decision card: idea (Make this · Swap · Ask), then in the same
    card: or start from (family / at home) · or pick another idea · none of these */
-.feature__more-ways.dinner { padding: 0 var(--space-16) var(--space-12); margin-top: 0; }
-.dinner__or { display: flex; align-items: center; gap: var(--space-12); margin: var(--space-20) 0 var(--space-12); color: var(--text-tertiary); font-size: var(--fs-label); font-weight: var(--fw-semibold); letter-spacing: var(--ls-label); text-transform: uppercase; }
-.dinner__or::before, .dinner__or::after { content: ""; flex: 1; height: 1px; background: var(--border-subtle); }
-.feature__more-ways .dinner__starts { margin-top: 0; }
-.feature__more-ways .idea-list--flat { border-top: 0; }
-.feature__more-ways .dinner__none { width: 100%; margin-top: var(--space-4); }
+
+
+/* Round 15 · T01 decision card (Figma v3 · R2 "Today: deciding dinner"), curry-leaf theme */
+.decide-card { padding: var(--space-16) var(--space-16) var(--space-8); }
+.decide-card__title { margin-top: var(--space-4); font-family: var(--font-title); font-weight: var(--fw-semibold); font-size: var(--fs-title-m); line-height: var(--lh-title-m); color: var(--text-primary); }
+.decide-card__starts { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-16); }
+.decide-card .start-card { display: flex; align-items: center; gap: var(--space-16); width: 100%; min-height: 96px; padding: var(--space-16); border-radius: var(--radius-lg); text-align: left; box-shadow: none; transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast); }
+.decide-card .start-card:active { transform: scale(0.985); filter: brightness(0.97); }
+.decide-card .start-card--family { background: var(--start-family-bg); }
+.decide-card .start-card--home { background: var(--start-home-bg); }
+.decide-card .start-card__art { display: grid; place-items: center; width: 64px; height: 64px; flex: none; border-radius: var(--radius-md); background: var(--bg-surface); box-shadow: 0 1px 2px rgba(28, 42, 32, 0.06); }
+.decide-card .start-card__art svg { width: 32px; height: 32px; }
+.decide-card .start-card--family .start-card__art { color: var(--jaggery-700); }
+.decide-card .start-card--home .start-card__art { color: var(--curryleaf-700); }
+.decide-card .start-card__title { font-family: var(--font-title); font-weight: var(--fw-semibold); font-size: var(--fs-title-s); line-height: var(--lh-title-s); color: var(--text-primary); }
+.decide-card .start-card__sub { margin-top: 2px; font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
+.decide-card .start-card__chev { display: grid; flex: none; color: var(--text-secondary); }
+.decide-card .start-card__chev svg { width: 20px; height: 20px; }
+.decide-card .start-card[aria-disabled="true"] { opacity: 0.55; }
+.decide-card__ideas { margin-top: var(--space-24); }
+.decide-card__label { font-size: var(--fs-label); line-height: 16px; letter-spacing: var(--ls-label); text-transform: uppercase; font-weight: var(--fw-semibold); color: var(--text-secondary); margin-bottom: var(--space-4); }
+.decide-card .idea-row { min-height: 88px; }
+.decide-card__none { display: flex; justify-content: center; align-items: center; gap: var(--space-8); width: 100%; min-height: 48px; margin-top: var(--space-4); border-top: 1px solid var(--border-subtle); border-radius: 0; }
+.decide-card__none svg { width: 18px; height: 18px; }
+.decide-card__empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); margin: var(--space-20) 0 var(--space-8); }
+.decide-card__empty-title { font-weight: var(--fw-semibold); font-size: var(--fs-body-l); }
+.tag--plan { background: var(--curryleaf-50); color: var(--curryleaf-700); }
+/* Fit "The family's dinner" on one line at 402 px (Figma T01) */
+.decide-card .start-card { gap: var(--space-12); padding: var(--space-12) var(--space-12) var(--space-12) var(--space-12); }
+.decide-card .start-card__art { width: 56px; height: 56px; }
+.decide-card .start-card__art svg { width: 28px; height: 28px; }
+.decide-card .start-card__title { font-size: var(--fs-body-l); line-height: 24px; }
+/* Memory legend: an even 2 × 2 grid instead of a ragged wrap */
+.legend { display: grid !important; grid-template-columns: 1fr 1fr; gap: var(--space-8) var(--space-16); }
+.legend li { display: flex; align-items: center; gap: var(--space-8); }
+/* One prep item: "Done" sits on the same line as the task (Figma T01), not on its own row */
+.prep-card--single { display: grid; grid-template-columns: 1fr auto; column-gap: var(--space-12); align-items: end; }
+.prep-card--single .prep-card__eyebrow { grid-column: 1 / -1; }
+.prep-card--single .prep-card__foot { margin-top: 0; align-self: center; }
