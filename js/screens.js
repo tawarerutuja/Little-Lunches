@@ -853,16 +853,17 @@ export function allergiesScreen() {
     label: 'Setup step 2 of 5: allergies and house rules',
     bar: setupBar('allergies'),
     body: [
+      // One title, one short line that explains both parts; each part then sits under a
+      // quiet label (not a second big heading) with room to breathe.
       h('h1', { class: 'screen-title t-title-l', text: 'Allergies and house rules' }),
-      h('section', { class: 'section', 'aria-labelledby': 'sec-allergy' },
-        h('h2', { class: 'section__title t-title-m', id: 'sec-allergy', text: 'Allergies' }),
-        h('p', { class: 'section__help', text: 'We never suggest these foods' }),
+      h('p', { class: 'screen-lead', text: `We never suggest food ${who} is allergic to. Everyone who feeds him sees your rules.` }),
+      h('section', { class: 'form-section', 'aria-labelledby': 'sec-allergy' },
+        h('h2', { class: 'form-section__label', id: 'sec-allergy', text: 'Allergies' }),
         chipsWrap,
         milkQ,
         summary),
-      h('section', { class: 'section', 'aria-labelledby': 'sec-rules' },
-        h('h2', { class: 'section__title t-title-m', id: 'sec-rules', text: 'House rules' }),
-        h('p', { class: 'section__help', text: `Shown to everyone who feeds ${who}` }),
+      h('section', { class: 'form-section', 'aria-labelledby': 'sec-rules' },
+        h('h2', { class: 'form-section__label', id: 'sec-rules', text: 'House rules' }),
         rules),
     ],
     footer: [err, cont],
@@ -970,7 +971,12 @@ export function familyScreen() {
   const { el } = shell({
     label: 'Setup step 3 of 5: family food',
     bar: setupBar('family'),
-    body: [h('h1', { class: 'screen-title t-title-l', text: 'Your family’s food' }), diet, grid],
+    body: [
+      h('h1', { class: 'screen-title t-title-l', text: 'Your family’s food' }),
+      h('p', { class: 'screen-lead', text: 'Ideas start from what you already cook at home.' }),
+      h('section', { class: 'form-section', 'aria-label': 'What your family eats' }, h('h2', { class: 'form-section__label', text: 'Your family eats' }), diet),
+      h('section', { class: 'form-section', 'aria-label': 'Cooking style' }, h('h2', { class: 'form-section__label', text: 'Cooking style · pick all that fit' }), grid),
+    ],
     footer: [err, cont],
   });
   return { el, onLeave: el.cleanup };

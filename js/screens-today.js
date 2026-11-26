@@ -12,14 +12,14 @@ import {
 import { navigate, back, currentRoute } from './router.js';
 import { store, childName, nameOr, ageInMonths, ageLabel, findFood, backupIds, unsafeAllergens, avoids } from './store.js';
 import {
-  MEALS, INGREDIENTS, INGREDIENT_GROUPS, TIME_CHOICES, FAMILY_DISHES, REQUEST_PICKS, REFUSAL_REASONS,
+  MEALS, RECIPES, INGREDIENTS, INGREDIENT_GROUPS, TIME_CHOICES, FAMILY_DISHES, REQUEST_PICKS, REFUSAL_REASONS,
   SERVE_WAYS, thumbUrl, photoUrl,
 } from './data.js';
 import {
   todayKey, dateKey, addDays, mealNow, mealHeading, meal as mealOf, earlierMeals, recipe, recipeSafe,
   readyIdeas, ideaMeta, homeToday, homeSummary, homeIdeas, nothingFitsFixes, parseRequest, requestIdeas,
   requestTitle, familyPlate, OUTCOMES, entry, logMeal, entryLine, usualFor, refusalStreak, planDay,
-  prepReminder, fmtTime, allergyName, ingredient, capFirst, fmtLong, fromKey, twistTag, planAlternatives, adaptForChild, allergyReason,
+  prepReminder, fmtTime, allergyName, ingredient, capFirst, fmtLong, fromKey, twistTag, adaptForChild, allergyReason,
 } from './meals.js';
 import { shell, rise, joinNice, footerMsg, showMsg } from './screens.js';
 
@@ -55,11 +55,12 @@ function openRecipe(r, { replace = false } = {}) {
 }
 
 /** Idea row: photo, name, meta, chevron. */
-function ideaRow(r, { best = false } = {}) {
+function ideaRow(r, { best = false, tag = null } = {}) {
+  const label = tag || (best ? 'Best fit' : null);
   const b = h('button', { type: 'button', class: 'row idea-row' },
     thumb(r.photo ? thumbUrl(r.photo) : null, 'idea-row__img'),
     h('span', { class: 'row__label' },
-      best ? h('span', { class: 'tag tag--best', text: 'Best fit' }) : null,
+      label ? h('span', { class: label === 'From your plan' ? 'tag tag--plan' : 'tag tag--best', text: label }) : null,
       twistTag(r) ? h('span', { class: 'tag tag--new', text: twistTag(r) }) : null,
       h('span', { class: 'idea-row__name', text: r.name }),
       h('span', { class: 'row__meta', text: ideaMeta(r) })),
@@ -144,9 +145,9 @@ export function todayScreen() {
   // Tonight's head start for tomorrow: one small step per planned meal (5 minutes or less).
   // Soaking is a must-do and says so; the rest are optional head starts.
   const prep = prepReminder(s);
-  const prepCard = prep ? h('section', { class: 'prep-card', 'aria-labelledby': 'prep-t' },
+  const prepCard = prep ? h('section', { class: `prep-card${prep.items.length === 1 ? ' prep-card--single' : ''}`, 'aria-labelledby': 'prep-t' },
     h('p', { class: 'prep-card__eyebrow', id: 'prep-t' }, h('span', { class: 'contents', html: icon('clock') }),
-      h('span', { text: `${loggedNow ? 'Before bed' : 'Tonight'} · ${prep.label.replace('For ', 'for ')}` })),
+      h('span', { text: `${loggedNow && now === 'dinner' ? 'Before bed' : 'Tonight'} · ${prep.label.replace('For ', 'for ')}` })),
     h('ul', { class: 'prep-card__list' }, prep.items.map((x) => h('li', { class: 'prep-item' },
       h('span', { class: 'prep-item__head' },
         h('span', { class: `tl__meal tl__meal--${x.meal}`, text: mealOf(x.meal).name }),
@@ -180,20 +181,19 @@ export function todayScreen() {
     const before = earlierMeals(served.meal);
     if (before.length) blocks.push(earlierToday(s, tk, before));
   } else if (loggedNow) {
-    // K04 · after the meal: one timeline, the prep, then tomorrow's breakfast.
-    blocks.push(timeline({ title: 'Today' }));
+    // K04 · this meal is done: what he ate so far, tonight's prep, then the SAME decision
+    // card for the next meal (after dinner: tomorrow's breakfast).
+    blocks.push(earlierToday(s, tk, [...earlierMeals(now), now], { title: 'Today so far' }));
     if (prepCard) blocks.push(prepCard);
-    blocks.push(nextMealCard(now));
+    const nextIdx = MEALS.findIndex((m) => m.id === now) + 1;
+    const tomorrow = nextIdx >= MEALS.length;
+    const next = tomorrow ? 'breakfast' : MEALS[nextIdx].id;
+    blocks.push(decisionCard(next, { date: tomorrow ? dateKey(addDays(new Date(), 1)) : tk, tomorrow }));
   } else {
-    // Day in time order: what he ate earlier → tonight's prep → the decision.
+    // Day in time order: what he ate earlier → tonight's prep → the decision (Figma T01).
     if (earlierBlock) blocks.push(earlierBlock);
     if (prepCard) blocks.push(prepCard);
-    // Same card for every meal: the planned dish, or his best-fit idea when nothing is planned.
-    if (plannedRecipe) blocks.push(suggestionCard(plannedRecipe, now, { planned: true }));
-    else {
-      const pick = todayPick(tk, now);
-      blocks.push(pick ? suggestionCard(pick, now, { planned: false }) : emptyDecideCard(now));
-    }
+    blocks.push(decisionCard(now));
   }
 
   const { el } = shell({ cls: 'today', label: 'Today', bar: childHeader(), body: rise(blocks), tabs: 'today' });
@@ -201,7 +201,7 @@ export function todayScreen() {
 }
 
 /** Earlier today: logged meals with how he ate, and optional + rows for the rest. */
-function earlierToday(s, tk, earlier) {
+function earlierToday(s, tk, earlier, { title = 'Earlier today' } = {}) {
   const logged = earlier.filter((m) => entry(s, tk, m));
   const missing = earlier.length - logged.length;
 
@@ -220,119 +220,65 @@ function earlierToday(s, tk, earlier) {
   // Something is added → show what was eaten, and what is still open (in time order).
   return h('section', { class: 'earlier', 'aria-labelledby': 'earlier-t' },
     h('div', { class: 'section-label section-gap' },
-      h('h2', { class: 't-label', id: 'earlier-t', text: 'Earlier today' }),
+      h('h2', { class: 't-label', id: 'earlier-t', text: title }),
       h('span', { class: 'row__meta', text: missing ? `${logged.length} of ${earlier.length} added · rest optional` : 'All added' })),
     h('div', { class: 'card timeline timeline--compact' }, earlier.map((m) => timelineRow(s, tk, m))));
 }
 
-/* ---------- Today's decision: one card for every meal (planned dish or best fit) ---------- */
-/** The idea shown when nothing is planned: his best fit, or the one Swap moved to. */
-function todayPick(tk, now) {
+/* ---------- T01 · The decision card (Figma: v3 · R2 Today, "Today: deciding dinner") ----------
+   One card, one question: the meal → "Make his dinner from" → two big ways to start
+   (Fitts: full-width ~96 px targets) → "Or pick a ready idea": exactly 3 rows (Hick),
+   "Best fit" the only tag (Von Restorff) → "None of these?" opens 3 more, then Ask.
+   Used for the current meal, and for the next meal once this one is logged. */
+function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
   const s = store.get();
-  const id = s.ui.todayPick?.[`${tk}-${now}`];
-  const chosen = id ? recipe(id) : null;
-  if (chosen && recipeSafe(chosen, s)) return chosen;
-  return readyIdeas(now)[0] || null;
-}
-
-/**
- * ONE connected card (agreed design, Gestalt common region): the idea first (Make this,
- * Swap, Ask), then, inside the same card, the other ways to decide: start from the
- * family's food or what's at home, or pick another ready idea. No sheet, nothing hidden.
- */
-function suggestionCard(r, now, { planned }) {
-  const tk = todayKey();
-  const s = store.get();
-  const prepNote = r.prep ? (s.plan.prepDone[tk] ? `${r.prep.replace('before bed', '').trim()} done last night` : 'Needs prep') : r.meta;
-  const others = readyIdeas(now, s, [r.id]).slice(0, 2);
-  return h('section', { class: 'card feature feature--decide', 'aria-labelledby': 'planned-t' },
-    r.photo ? h('img', { class: 'feature__img', src: photoUrl(r.photo), alt: r.name, width: '362', height: '190', loading: 'eager' }) : null,
-    h('div', { class: 'feature__body' },
-      h('div', { class: 'tag-row' }, h('span', { class: `tag tag--meal-${now}`, text: mealHeading(now) }),
-        h('span', { class: planned ? 'tag' : 'tag tag--best', text: planned ? 'From your plan' : 'Best fit' }),
-        twistTag(r) ? h('span', { class: 'tag tag--new', text: twistTag(r) }) : null),
-      h('h2', { class: 'feature__title', id: 'planned-t', text: r.name }),
-      h('p', { class: 'feature__meta', text: planned ? `${r.mins} min · ${prepNote}` : ideaMeta(r) }),
-      button({ label: 'Make this', onClick: () => openRecipe(r) }),
-      // Real life changes plans: one tap swaps (Undo in the toast), or ask for something.
-      h('div', { class: 'feature__actions' },
-        button({ label: 'Swap', variant: 'secondary', size: 'm', iconName: 'swap', ariaLabel: `Swap ${r.name} for another idea`, onClick: () => (planned ? swapToday(tk, now) : swapPick(tk, now, r)) }),
-        button({ label: 'Ask', variant: 'secondary', size: 'm', iconName: 'ai', ariaLabel: 'Ask for something specific', onClick: () => (isOffline() ? toast('Asking needs internet. Swap still works.', { iconName: 'offline' }) : askSheet()) }))),
-    // The other ways to decide live in the same card, right below the idea.
-    h('div', { class: 'feature__more-ways dinner' },
-      h('p', { class: 'dinner__or', role: 'separator', 'aria-label': 'Or start from' }, h('span', { text: 'or start from' })),
-      startCards(now),
-      others.length ? h('p', { class: 'dinner__or', role: 'separator', 'aria-label': 'Or pick another idea' }, h('span', { text: 'or pick another idea' })) : null,
-      others.length ? h('div', { class: 'idea-list idea-list--flat' }, others.map((x) => ideaRow(x))) : null,
-      button({ label: 'None of these? Show other ideas', variant: 'text', iconName: 'refresh', cls: 'dinner__none', onClick: () => moreIdeasSheet(now, [r.id, ...others.map((x) => x.id)]) })));
-}
-
-/** Swap when nothing is planned: the next of his ready ideas, cycling, with Undo. */
-function swapPick(tk, now, cur) {
-  const s = store.get();
-  const key = `${tk}-${now}`;
-  const all = readyIdeas(now);
-  const seen = new Set([...(s.ui.swapSeen?.[key] || []), cur.id]);
-  const next = all.find((x) => !seen.has(x.id)) || all.find((x) => x.id !== cur.id);
-  if (!next) { toast('This is his best fit for now. Try Ask for something specific.', { iconName: 'info' }); return; }
-  const fresh = all.some((x) => !seen.has(x.id));
-  haptic(10);
-  store.ui({ todayPick: { ...(s.ui.todayPick || {}), [key]: next.id }, swapSeen: { ...(s.ui.swapSeen || {}), [key]: fresh ? [...seen] : [cur.id] } });
-  refresh();
-  toast(`Swapped to ${next.name}`, { iconName: 'swap', action: { label: 'Undo', onClick: () => { store.ui({ todayPick: { ...(store.get().ui.todayPick || {}), [key]: cur.id } }); refresh(); } } });
-}
-
-/** The two ways to start (family's cooking, what's at home), used in the sheet and the empty card. */
-function startCards(now) {
   const offline = isOffline();
-  const s = store.get();
+  const heading = tomorrow ? `Tomorrow’s ${mealWord(meal)}` : mealHeading(meal);
+
+  // Not the same dish he already had that day (curd rice at snack → not curd rice again at dinner).
+  const eaten = Object.values(s.history[date] || {});
+  const eatenIds = RECIPES.filter((r) => eaten.some((e) => e.recipe === r.id || (r.food && e.food === r.food))).map((r) => r.id);
+  // The plan's dish (if safe and not already eaten) leads, tagged "From your plan"; then his best fits.
+  const plannedId = planDay(date, s)?.meals?.[meal];
+  const planned = plannedId ? recipe(plannedId) : null;
+  const plannedOk = planned && recipeSafe(planned, s) && !eatenIds.includes(planned.id) ? planned : null;
+  const ideas = [...(plannedOk ? [plannedOk] : []), ...readyIdeas(meal, s, [...eatenIds, ...(plannedOk ? [plannedOk.id] : [])])].slice(0, 3);
+
   const family = h('button', { type: 'button', class: 'start-card start-card--family' },
     h('span', { class: 'start-card__art', html: icon('pot') }),
-    h('span', { class: 'start-card__text' }, h('span', { class: 'start-card__title', text: ['lunch', 'dinner'].includes(now) ? `The family’s ${mealWord(now)}` : 'What the family eats' }), h('span', { class: 'start-card__sub', text: 'His plate from your cooking' })),
-    h('span', { class: 'nav-row__chev', html: icon('forward') }));
+    h('span', { class: 'start-card__text' },
+      h('span', { class: 'start-card__title', text: ['lunch', 'dinner'].includes(meal) ? `The family’s ${mealWord(meal)}` : 'What the family eats' }),
+      h('span', { class: 'start-card__sub', text: 'His plate from your cooking' })),
+    h('span', { class: 'start-card__chev', html: icon('forward') }));
   family.addEventListener('click', () => navigate('family-dinner'));
+
   const home = h('button', { type: 'button', class: 'start-card start-card--home', 'aria-disabled': offline ? 'true' : null },
     h('span', { class: 'start-card__art', html: icon('basket') }),
-    h('span', { class: 'start-card__text' }, h('span', { class: 'start-card__title', text: 'What’s at home' }), h('span', { class: 'start-card__sub', text: offline ? 'Needs internet' : homeSummary(s) })),
-    h('span', { class: 'nav-row__chev', html: icon('forward') }));
+    h('span', { class: 'start-card__text' },
+      h('span', { class: 'start-card__title', text: 'What’s at home' }),
+      h('span', { class: 'start-card__sub', text: offline ? 'Needs internet' : homeSummary(s) })),
+    h('span', { class: 'start-card__chev', html: icon('forward') }));
   home.addEventListener('click', () => {
     if (offline) { toast('“What’s at home” needs internet. His usual ideas below still work.', { iconName: 'offline' }); return; }
-    store.set((d) => { d.home.meal = now; });
+    store.set((d) => { d.home.meal = meal; });
     navigate('home');
   });
-  return h('div', { class: 'dinner__starts' }, family, home);
-}
 
-/** Edge case: nothing safe fits his foods yet (e.g. many allergies, few foods). */
-function emptyDecideCard(now) {
-  return h('section', { class: 'card dinner', 'aria-labelledby': 'decide-t' },
-    h('header', { class: 'dinner__head' },
-      h('p', { class: `eyebrow eyebrow--${now}` }, h('span', { class: 'contents', html: icon(now) }), h('span', { text: mealHeading(now) })),
-      h('h2', { class: 't-title-m', id: 'decide-t', text: `Make his ${mealWord(now)} from` })),
-    startCards(now),
-    h('div', { class: 'dinner__empty' },
-      h('p', { class: 'dinner__empty-title', text: 'No ready ideas yet' }),
-      h('p', { class: 'row__meta', text: 'Add a few foods he eats, or start from the family’s food above.' }),
-      button({ label: 'Add foods he eats', variant: 'secondary', size: 'm', onClick: () => navigate('his-foods') })));
-}
-
-/** One-tap swap on Today: the plan's next best fit for this meal, with Undo. */
-function swapToday(tk, now) {
-  const s = store.get();
-  const prev = s.plan.days[tk].meals[now];
-  // Each tap shows a dish not seen yet this time; after the last one it starts over.
-  const key = `${tk}-${now}`;
-  const seen = new Set([...(s.ui.swapSeen?.[key] || []), prev]);
-  const all = planAlternatives(s, tk, now, 20);
-  const next = all.find((r) => !seen.has(r.id)) || all[0];
-  if (!next) { toast('This is his best fit for now. Try Ask for something specific.', { iconName: 'info' }); return; }
-  if (saveFailed(() => swapToday(tk, now))) return;
-  const fresh = all.some((r) => !seen.has(r.id));
-  store.ui({ swapSeen: { ...(s.ui.swapSeen || {}), [key]: fresh ? [...seen] : [prev] } });
-  haptic(10);
-  store.set((d) => { d.plan.days[tk].meals[now] = next.id; });
-  refresh();
-  toast(`Swapped to ${next.name}`, { iconName: 'swap', action: { label: 'Undo', onClick: () => { store.set((d) => { d.plan.days[tk].meals[now] = prev; }); refresh(); } } });
+  const rows = ideas.map((r, i) => ideaRow(r, { tag: i === 0 ? (plannedOk && r.id === plannedOk.id ? 'From your plan' : 'Best fit') : null }));
+  return h('section', { class: 'card decide-card', 'aria-labelledby': `decide-${meal}` },
+    h('p', { class: `eyebrow eyebrow--${meal}` }, h('span', { class: 'contents', html: icon(meal) }), h('span', { text: heading })),
+    h('h2', { class: 'decide-card__title', id: `decide-${meal}`, text: `Make his ${mealWord(meal)} from` }),
+    h('div', { class: 'decide-card__starts' }, family, home),
+    ideas.length
+      ? h('div', { class: 'decide-card__ideas' },
+        h('h3', { class: 'decide-card__label', text: 'Or pick a ready idea' }),
+        h('div', { class: 'idea-list idea-list--flat' }, rows),
+        h('button', { type: 'button', class: 'link decide-card__none', onClick: () => moreIdeasSheet(meal, ideas.map((r) => r.id)) },
+          h('span', { class: 'contents', html: icon('refresh') }), h('span', { text: 'None of these? Show other ideas' })))
+      : h('div', { class: 'decide-card__empty' },
+        h('p', { class: 'decide-card__empty-title', text: 'No ready ideas yet' }),
+        h('p', { class: 'row__meta', text: 'Add a few foods he eats, or start from the family’s food above.' }),
+        button({ label: 'Add foods he eats', variant: 'secondary', size: 'm', cls: 'btn--auto', onClick: () => navigate('his-foods') })));
 }
 
 /* ---------- K01 · How did he eat? ---------- */
@@ -438,21 +384,6 @@ export function timelineRow(s, date, m) {
     e.outcome ? h('span', { class: `face face--${e.outcome}`, html: icon(OUTCOMES[e.outcome].icon) }) : null);
   b.addEventListener('click', () => logSheet(m, date, { lock: true }));
   return b;
-}
-
-/* ---------- K04 · After the meal: tomorrow's breakfast / next meal ---------- */
-function nextMealCard(now) {
-  const s = store.get();
-  const nextIdx = MEALS.findIndex((m) => m.id === now) + 1;
-  const isTomorrow = nextIdx >= MEALS.length;
-  const target = isTomorrow ? 'breakfast' : MEALS[nextIdx].id;
-  const dk = isTomorrow ? dateKey(addDays(new Date(), 1)) : todayKey();
-  const planned = planDay(dk, s)?.meals?.[target];
-  const r = (planned && recipe(planned)) || readyIdeas(target)[0];
-  if (!r) return null;
-  return h('section', { 'aria-label': 'Next meal' },
-    h('h2', { class: 't-label section-gap', text: isTomorrow ? 'Tomorrow’s breakfast' : `Next: ${mealOf(target).name.toLowerCase()}` }),
-    h('div', { class: 'card idea-list' }, ideaRow(r)));
 }
 
 /* ==========================================================================

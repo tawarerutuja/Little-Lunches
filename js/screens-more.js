@@ -350,9 +350,9 @@ export function profileScreen() {
     navRow({ title: 'People who feed him', sub: carers.length ? `${carers.map((c) => c.name).join(', ')} · invite someone else` : 'Invite someone who feeds him', media: iconTile('people', 'dinner'), onClick: () => navigate('people') }));
 
   const group2 = h('div', { class: 'card nav-list' },
-    navRow({ title: 'Language', sub: 'English', media: h('span', { class: 'row__icon', html: icon('language') }), onClick: () => languageSheet() }),
-    navRow({ title: 'Help', sub: 'Common questions and chat', media: h('span', { class: 'row__icon', html: icon('help') }), onClick: () => navigate('help') }),
-    navRow({ title: 'Add another child', media: h('span', { class: 'row__icon row__icon--link', html: icon('plus') }), cls: 'nav-row--link', onClick: () => comingSoon('Adding another child') }));
+    navRow({ title: 'Language', sub: 'English', media: iconTile('language', 'neutral'), onClick: () => languageSheet() }),
+    navRow({ title: 'Help', sub: 'Common questions and chat', media: iconTile('help', 'neutral'), onClick: () => navigate('help') }),
+    navRow({ title: 'Add another child', media: iconTile('plus', 'leaf'), cls: 'nav-row--link', onClick: () => comingSoon('Adding another child') }));
 
   const signOut = h('button', { type: 'button', class: 'link link--danger link--center block-gap', text: 'Sign out', onClick: () => signOutDialog() });
 
