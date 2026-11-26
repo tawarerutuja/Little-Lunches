@@ -53,7 +53,7 @@ Notifications that would come 20 or 30 minutes later (*How did he eat?* and *Try
 - T01 Today, including:
   - the *Did he eat earlier today?* card, which opens L02;
   - *Tonight · for Monday*: tomorrow’s real prep (soak, chop, grate, set curd), only when there is some;
-  - **one connected decision card** for every meal: the idea (*From your plan* or *Best fit*) with **Make this**, **Swap** (one tap, Undo) and **Ask**. In the same card, *or start from* (the family’s food, what’s at home) and *or pick another idea* (two more);
+  - **the T01 decision card** (Figma *v3 · R2 Today*, “Today: deciding dinner”), in curry-leaf colours, for every meal: *Make his dinner from* → two big start cards (*The family’s dinner* in warm jaggery, *What’s at home* in curry leaf) → *Or pick a ready idea*: 3 rows, the first tagged *Best fit* (or *From your plan*) → *None of these? Show other ideas*, then Ask. After a meal is logged, the same card appears for the **next meal** (after dinner, *Tomorrow’s breakfast*), and dishes he already ate that day are left out;
   - *None of these?*, which opens T05 More ideas, then T05s Ask for something specific.
 - T07 Family dinner → T08-L Phulka thinking (1.5 s) → T08 his plate.
 - T09 What’s at home → T09g Meal and time, T09f Usually at home, V01 Listening → T10 Ideas.
@@ -164,6 +164,16 @@ js/   icons · phulka · data · store · meals (logic) · components · router 
 assets/photos/        720 px JPGs (hero 1080 px)
 assets/photos/thumb/  192 px square crops
 ```
+
+### Round 15 · Back to the finalised T01 screen
+- Today’s decision card is rebuilt to match Figma T01 exactly, in curry-leaf colours. The hero photo card with separate Swap and Ask buttons is gone: the ready-idea rows and *None of these?* (which leads to Ask) already cover them.
+- **After logging a meal**, Today shows *Today so far*, tonight’s prep, then the **same T01 card for the next meal**, instead of a single “Next” row.
+- **Allergies and house rules:** one title and one lead line, then quiet *Allergies* and *House rules* labels with more space. *Your family’s food* now follows the same pattern.
+- **Visual fixes:**
+  - The Memory legend is an even 2 × 2 grid.
+  - Profile’s Language, Help and Add another child rows use icon tiles like the rows above.
+  - Neutral icon tiles are visible on white cards.
+  - A single prep task keeps *Done* on the same line.
 
 ### Round 14 · Only prep that takes real time
 - Tomorrow’s prep card lists only steps that take time the night before: soaking, chopping or cutting, grating, shelling peas, kneading, roasting, cleaning greens, and setting curd.
