@@ -6,7 +6,7 @@ import {
   h, button, iconButton, topbar, textField, pickerField, micButton, chip, toggleRow,
   segmented, photoTile, choiceCard, radioGroupKeys, note, otpInput, lockupSmall,
   openSheet, confirmDialog, toast, comingSoon, smsBanner, watchOverflow, wait, nextId,
-  focusIfKeyboard, reveal, tabBar,
+  focusIfKeyboard, reveal, tabBar, sectionHead,
 } from './components.js';
 import { seedReturning, typedFoodUnsafe } from './meals.js';
 import { phulka } from './phulka.js';
@@ -853,17 +853,17 @@ export function allergiesScreen() {
     label: 'Setup step 2 of 5: allergies and house rules',
     bar: setupBar('allergies'),
     body: [
-      // One title, one short line that explains both parts; each part then sits under a
-      // quiet label (not a second big heading) with room to breathe.
+      // v1.3 type roles: screen title + its own lead; each part gets a Hind section title
+      // with an icon tile (two differences from the screen title), 40 px apart.
       h('h1', { class: 'screen-title t-title-l', text: 'Allergies and house rules' }),
-      h('p', { class: 'screen-lead', text: `We never suggest food ${who} is allergic to. Everyone who feeds him sees your rules.` }),
-      h('section', { class: 'form-section', 'aria-labelledby': 'sec-allergy' },
-        h('h2', { class: 'form-section__label', id: 'sec-allergy', text: 'Allergies' }),
+      h('p', { class: 'screen-lead', text: 'He only sees ideas that fit these.' }),
+      h('section', { class: 'section', 'aria-labelledby': 'sec-allergy' },
+        sectionHead({ id: 'sec-allergy', title: 'Allergies', help: 'We never suggest these foods', iconName: 'backup' }),
         chipsWrap,
         milkQ,
         summary),
-      h('section', { class: 'form-section', 'aria-labelledby': 'sec-rules' },
-        h('h2', { class: 'form-section__label', id: 'sec-rules', text: 'House rules' }),
+      h('section', { class: 'section', 'aria-labelledby': 'sec-rules' },
+        sectionHead({ id: 'sec-rules', title: 'House rules', help: `Shown to everyone who feeds ${who}`, iconName: 'child' }),
         rules),
     ],
     footer: [err, cont],
@@ -891,7 +891,7 @@ export function familyScreen() {
     const m = store.get().mixed;
     if (m.regions.length) return m.regions.join(', ');
     if (m.text) return m.text;
-    return 'Tell us in your words';
+    return 'Type your family’s food';
   };
 
   const grid = h('div', { class: 'tiles family__tiles', role: 'group', 'aria-label': 'Cuisines your family cooks. Pick all that fit.' },
@@ -943,12 +943,12 @@ export function familyScreen() {
       tile.setMeta(mixedSummary());
       api.close();
       showMsg(err, '');
-      toast(has ? 'Saved your family food' : 'Removed “Mixed or other”', { iconName: has ? 'success' : 'info' });
+      toast(has ? 'Saved your family food' : 'Removed “Something else”', { iconName: has ? 'success' : 'info' });
     }
 
     api = openSheet({
-      title: 'Mixed or other',
-      sub: 'Tell us in your own words',
+      title: 'Something else',
+      sub: 'Type your family’s food in your own words',
       body: h('div', {}, field, h('span', { class: 't-label', text: 'Or pick all that fit' }), chips),
       foot: button({ label: 'Save family food', onClick: () => save() }),
       initialFocus: 'input',
@@ -974,8 +974,8 @@ export function familyScreen() {
     body: [
       h('h1', { class: 'screen-title t-title-l', text: 'Your family’s food' }),
       h('p', { class: 'screen-lead', text: 'Ideas start from what you already cook at home.' }),
-      h('section', { class: 'form-section', 'aria-label': 'What your family eats' }, h('h2', { class: 'form-section__label', text: 'Your family eats' }), diet),
-      h('section', { class: 'form-section', 'aria-label': 'Cooking style' }, h('h2', { class: 'form-section__label', text: 'Cooking style · pick all that fit' }), grid),
+      h('section', { class: 'section', 'aria-labelledby': 'sec-diet' }, sectionHead({ id: 'sec-diet', title: 'Your family eats' }), diet),
+      h('section', { class: 'section', 'aria-labelledby': 'sec-cuisine' }, sectionHead({ id: 'sec-cuisine', title: 'Cooking style', help: 'Pick all that fit' }), grid),
     ],
     footer: [err, cont],
   });

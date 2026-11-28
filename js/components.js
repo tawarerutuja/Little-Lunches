@@ -6,6 +6,7 @@ import { DEMO } from './data.js';
 import { phulka } from './phulka.js';
 import { navigate, currentRoute } from './router.js';
 import { store } from './store.js';
+import { speak, stopSpeaking } from './voice.js';
 
 /* --------------------------------------------------------------------------
    Tiny element helper
@@ -227,13 +228,21 @@ export function pickerField({ label, value, placeholder, trailingIcon = 'plan', 
    has it (Chrome, Edge, Safari); otherwise fills a sample phrase so the
    flow can still be tried.
    -------------------------------------------------------------------------- */
-export function micButton({ input, sample = '', onResult, label = 'Say it' }) {
-  const btn = iconButton({ iconName: 'mic', label, variant: 'filled', size: 'sm' });
+/**
+ * size: '' = small, inside a text field. 'xl' = the big helper mic (72 px, shown before
+ * any text box). lang: what she speaks ('hi-IN', 'en-IN', 'ne-NP', 'mr-IN').
+ * onState('listening' | 'idle'), onBlocked() when the mic is off or refused.
+ */
+export function micButton({ input, sample = '', onResult, label = 'Say it', stopLabel = 'Stop listening', lang = 'en-IN', size = '', onState, onBlocked }) {
+  const btn = size === 'xl'
+    ? h('button', { type: 'button', class: 'mic-xl', 'aria-label': label, html: icon('mic') })
+    : iconButton({ iconName: 'mic', label, variant: 'filled', size: 'sm' });
   let rec = null;
   let fakeTimer = null;
   const originalPh = input.placeholder;
 
   const stop = () => {
+    const was = btn.classList.contains('is-listening');
     btn.classList.remove('is-listening');
     btn.setAttribute('aria-pressed', 'false');
     btn.setAttribute('aria-label', label);
@@ -241,7 +250,9 @@ export function micButton({ input, sample = '', onResult, label = 'Say it' }) {
     clearTimeout(fakeTimer);
     try { rec?.stop(); } catch { /* ignore */ }
     rec = null;
+    if (was) onState?.('idle');
   };
+  const blocked = (msg) => { stop(); if (onBlocked) onBlocked(); else toast(msg, { iconName: 'info' }); };
   const deliver = (text) => {
     input.value = text;
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -251,20 +262,21 @@ export function micButton({ input, sample = '', onResult, label = 'Say it' }) {
   btn.setAttribute('aria-pressed', 'false');
   btn.addEventListener('click', () => {
     if (btn.classList.contains('is-listening')) { stop(); return; }
-    askPermission('mic', { onAllow: begin });
+    askPermission('mic', { onAllow: begin, onDeny: () => onBlocked?.() });
   });
   function begin() {
     btn.classList.add('is-listening');
     btn.setAttribute('aria-pressed', 'true');
-    btn.setAttribute('aria-label', 'Stop listening');
+    btn.setAttribute('aria-label', stopLabel);
     input.placeholder = 'Listening…';
     input.value = '';
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    onState?.('listening');
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SR && !sim.on('voice')) {
       try {
         rec = new SR();
-        rec.lang = 'en-IN';
+        rec.lang = lang;
         rec.interimResults = true;
         rec.maxAlternatives = 1;
         rec.onresult = (e) => {
@@ -276,7 +288,7 @@ export function micButton({ input, sample = '', onResult, label = 'Say it' }) {
         rec.onerror = (e) => {
           stop();
           if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-            toast('Microphone is off. You can still type.', { iconName: 'info' });
+            blocked('Microphone is off. You can still type.');
           } else if (e.error === 'no-speech') {
             toast('We did not catch that. Try again or type it.', { iconName: 'info' });
           } else if (sample) {
@@ -295,6 +307,27 @@ export function micButton({ input, sample = '', onResult, label = 'Say it' }) {
     }, 1600);
   }
   btn.stop = stop;
+  return btn;
+}
+
+/* --------------------------------------------------------------------------
+   Listen: reads the screen aloud in her language (helper view). A speaker and
+   the word in her language; Stop while it speaks; the line being read is
+   highlighted (.is-reading). 56 px tall.
+   -------------------------------------------------------------------------- */
+export function listenButton({ lang = 'hi', label = 'Listen', stopLabel = 'Stop', getLines, onFallback, cls = '' }) {
+  const text = h('span', { class: 'listen-btn__label', text: label });
+  const ico = h('span', { class: 'listen-btn__icon contents', html: icon('speaker') });
+  const btn = h('button', { type: 'button', class: `listen-btn ${cls}`.trim(), 'aria-pressed': 'false' }, ico, text);
+  const reset = () => { btn.setAttribute('aria-pressed', 'false'); btn.classList.remove('is-speaking'); text.textContent = label; ico.innerHTML = icon('speaker'); };
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('is-speaking')) { stopSpeaking(); reset(); return; }
+    btn.setAttribute('aria-pressed', 'true'); btn.classList.add('is-speaking');
+    text.textContent = stopLabel; ico.innerHTML = icon('stop');
+    haptic(10);
+    speak(getLines(), { lang, onFallback, onEnd: reset });
+  });
+  btn.reset = reset;
   return btn;
 }
 
@@ -460,6 +493,76 @@ export function note({ text, kind = '', iconName = 'backup' }) {
   return h('div', { class: `note${kind ? ' note--' + kind : ''}`, role: kind === 'error' ? 'alert' : null },
     h('span', { html: icon(iconName), class: 'contents' }),
     h('span', { text }));
+}
+
+/* --------------------------------------------------------------------------
+   v1.3 · Section head: Hind SemiBold 18 title, optional 32 px Guide icon tile,
+   help text lined up with the title text (not the icon).
+   -------------------------------------------------------------------------- */
+export function sectionHead({ title, help = '', iconName = null, id = nextId('sec') }) {
+  return h('div', { class: 'section-head' },
+    iconName ? h('span', { class: 'section-head__tile', html: icon(iconName), 'aria-hidden': 'true' }) : null,
+    h('h2', { class: 't-section-title', id, text: title }),
+    help ? h('p', { class: 't-help', text: help }) : null);
+}
+
+/* --------------------------------------------------------------------------
+   v1.3 · Message family. One shape for all (radius 16, padding 16, 32 px tile,
+   section-title style title, help-text body); the role sets colour and icon.
+   reminder  · a small task with a 44 px tick (neutral card, Guide tile)
+   notice    · a calm fact (refusals, backups)
+   attention · time-bound with a real cost (jaggery, max 1 per screen)
+   alertMsg  · allergies and unsafe food only (danger)
+   infoMsg   · offline and system messages
+   -------------------------------------------------------------------------- */
+function messageCard(role, { iconName, title, body = '', meta = '', tags = [], actions = [], tick = null, foot = null, id = nextId('msg'), live = null }) {
+  const main = h('div', { class: 'msg__main' },
+    tags.length ? h('div', { class: 'msg__tags' }, tags) : null,
+    h('p', { class: 'msg__title', id, text: title }),
+    body ? (typeof body === 'string' ? h('p', { class: 'msg__body', text: body }) : body) : null,
+    meta ? h('p', { class: 'msg__meta', text: meta }) : null,
+    actions.length ? h('div', { class: 'msg__actions' }, actions) : null,
+    foot);
+  return h('section', { class: `msg msg--${role}`, 'aria-labelledby': id, role: live },
+    h('span', { class: 'msg__tile', html: icon(iconName), 'aria-hidden': 'true' }),
+    main,
+    tick || h('span'));
+}
+
+/**
+ * Reminder: a task with a tick. `tag` is a Guide tag text ("Needs tonight").
+ * `seeAll: { label, onClick }` adds the footer text button ("See all prep · 3").
+ * Returns the card; call card.setDone(text) to collapse it to the quiet done row.
+ */
+export function reminder({ title, line = '', meta = '', tag = '', onDone, seeAll = null, iconName = 'clock', doneLabel = 'Mark as done' }) {
+  const tick = h('button', { type: 'button', class: 'msg__tick', 'aria-pressed': 'false', 'aria-label': `${doneLabel}: ${title}${line ? '. ' + line : ''}`, html: icon('check') });
+  tick.addEventListener('click', () => { tick.setAttribute('aria-pressed', 'true'); haptic(12); setTimeout(() => onDone?.(), 160); });
+  const see = seeAll ? h('button', { type: 'button', class: 'link msg__see', 'aria-haspopup': 'dialog' },
+    h('span', { text: seeAll.label }), h('span', { class: 'contents', html: icon('forward') })) : null;
+  if (see) see.addEventListener('click', () => seeAll.onClick(see));
+  return messageCard('neutral', {
+    iconName, title, body: line, meta,
+    tags: tag ? [h('span', { class: 'tag tag--guide', text: tag })] : [],
+    tick, foot: see,
+  });
+}
+
+/** The collapsed Done state of a reminder: one quiet line with a green check. */
+export function reminderDone(text) {
+  return h('p', { class: 'msg msg--done', role: 'status' }, h('span', { class: 'contents', html: icon('success') }), h('span', { text }));
+}
+
+export function notice({ title, body = '', actions = [], iconName = 'tip' }) {
+  return messageCard('notice', { iconName, title, body, actions });
+}
+export function attention({ title, body = '', action = null, iconName = 'clock' }) {
+  return messageCard('attention', { iconName, title, body, actions: action ? [action] : [], live: 'alert' });
+}
+export function alertMsg({ title, body = '', iconName = 'allergy' }) {
+  return messageCard('danger', { iconName, title, body, live: 'alert' });
+}
+export function infoMsg({ title, body = '', iconName = 'info' }) {
+  return messageCard('info', { iconName, title, body });
 }
 
 /* --------------------------------------------------------------------------

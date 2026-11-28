@@ -4,22 +4,22 @@
 import { icon } from './icons.js';
 import { phulka } from './phulka.js';
 import {
-  h, button, iconButton, topbar, textField, micButton, chip, note, openSheet, toast, comingSoon,
+  h, button, iconButton, topbar, textField, micButton, chip, note, segmented, openSheet, toast, comingSoon,
   radioGroupKeys, phulkaEl, mealBadge, outcomeTiles, mealSegmented, listenSheet, lockNotification,
   scheduleReminder, cancelReminder, sectionLabel, navRow, thumb, iconTile, focusIfKeyboard, menuSheet,
-  askPermission, haptic, saveFailed, sim,
+  askPermission, haptic, saveFailed, sim, reminder, reminderDone, notice, attention, alertMsg, infoMsg,
 } from './components.js';
 import { navigate, back, currentRoute } from './router.js';
 import { store, childName, nameOr, ageInMonths, ageLabel, findFood, backupIds, unsafeAllergens, avoids } from './store.js';
 import {
-  MEALS, RECIPES, INGREDIENTS, INGREDIENT_GROUPS, TIME_CHOICES, FAMILY_DISHES, REQUEST_PICKS, REFUSAL_REASONS,
+  MEALS, RECIPES, SNACK_STOCK, INGREDIENTS, INGREDIENT_GROUPS, TIME_CHOICES, FAMILY_DISHES, REQUEST_PICKS, REFUSAL_REASONS,
   SERVE_WAYS, thumbUrl, photoUrl,
 } from './data.js';
 import {
   todayKey, dateKey, addDays, mealNow, mealHeading, meal as mealOf, earlierMeals, recipe, recipeSafe,
   readyIdeas, ideaMeta, homeToday, homeSummary, homeIdeas, nothingFitsFixes, parseRequest, requestIdeas,
   requestTitle, familyPlate, OUTCOMES, entry, logMeal, entryLine, usualFor, refusalStreak, planDay,
-  prepReminder, fmtTime, allergyName, ingredient, capFirst, fmtLong, fromKey, twistTag, adaptForChild, allergyReason,
+  prepPlan, setPrepDone, planAlternatives, stockStatus, setStock, markStock, fmtTime, allergyName, ingredient, capFirst, fmtLong, fromKey, twistTag, adaptForChild, allergyReason,
 } from './meals.js';
 import { shell, rise, joinNice, footerMsg, showMsg } from './screens.js';
 
@@ -117,22 +117,22 @@ export function todayScreen() {
 
   // E01 · No internet: what still works, not an error.
   if (isOffline()) {
-    blocks.push(note({ kind: 'info', iconName: 'offline', text: 'You’re offline. Ideas from his usual foods still work.' }));
+    blocks.push(infoMsg({ iconName: 'offline', title: 'You’re offline', body: 'Ideas from his usual foods still work.' }));
   }
 
   // E06 · Refused dinner 3 days in a row (calm, says when to call the doctor).
   if (refusalStreak(s) >= 3 && !s.dismissed[`refusal-${tk}`]) {
     const n = refusalStreak(s);
-    const card = h('section', { class: 'notice', 'aria-labelledby': 'notice-t' },
-      h('div', { class: 'notice__top' },
-        phulkaEl({ mood: 'calm', size: 64, disc: false }),
-        h('div', {},
-          h('h2', { class: 't-title-s', id: 'notice-t', text: `He didn’t eat dinner ${n} days in a row` }),
-          h('p', { class: 'notice__body', text: 'This is often normal at his age. If he seems unwell, has a fever or stops drinking, call his doctor.' }))),
-      h('div', { class: 'notice__actions' },
-        button({ label: 'Got it', variant: 'secondary', size: 'm', cls: 'btn--auto', onClick: () => { store.set((d) => { d.dismissed[`refusal-${tk}`] = true; }); refresh(); } }),
-        button({ label: 'Read more', variant: 'text', size: 'm', cls: 'btn--auto', onClick: () => { store.ui({ article: 'refused-liked' }); navigate('article'); } })));
-    blocks.push(card);
+    // v1.3 Notice: a calm fact, never an alarm. A refusal is not an error.
+    blocks.push(notice({
+      iconName: 'tip',
+      title: `He didn’t eat dinner ${n} days in a row`,
+      body: 'This is often normal at his age. If he seems unwell, has a fever or stops drinking, call his doctor.',
+      actions: [
+        button({ label: 'Got it', variant: 'secondary', size: 'm', cls: 'btn--auto btn--compact', onClick: () => { store.set((d) => { d.dismissed[`refusal-${tk}`] = true; }); refresh(); } }),
+        button({ label: 'Read more', variant: 'text', size: 'm', cls: 'btn--auto', onClick: () => { store.ui({ article: 'refused-liked' }); navigate('article'); } }),
+      ],
+    }));
   }
 
   // Earlier today, right here: what he already ate (from her or a carer), and an
@@ -142,25 +142,8 @@ export function todayScreen() {
   const servedToday = s.served && s.served.date === tk;
   const earlierBlock = earlier.length && !loggedNow && !servedToday ? earlierToday(s, tk, earlier) : null;
 
-  // Tonight's head start for tomorrow: one small step per planned meal (5 minutes or less).
-  // Soaking is a must-do and says so; the rest are optional head starts.
-  const prep = prepReminder(s);
-  const prepCard = prep ? h('section', { class: `prep-card${prep.items.length === 1 ? ' prep-card--single' : ''}`, 'aria-labelledby': 'prep-t' },
-    h('p', { class: 'prep-card__eyebrow', id: 'prep-t' }, h('span', { class: 'contents', html: icon('clock') }),
-      h('span', { text: `${loggedNow && now === 'dinner' ? 'Before bed' : 'Tonight'} · ${prep.label.replace('For ', 'for ')}` })),
-    h('ul', { class: 'prep-card__list' }, prep.items.map((x) => h('li', { class: 'prep-item' },
-      h('span', { class: 'prep-item__head' },
-        h('span', { class: `tl__meal tl__meal--${x.meal}`, text: mealOf(x.meal).name }),
-        h('span', { class: 'prep-item__dish', text: x.recipe.name }),
-        x.must ? h('span', { class: 'tag tag--prep', text: 'Must do' }) : null),
-      h('span', { class: 'prep-item__text', text: x.text })))),
-    h('div', { class: 'prep-card__foot' },
-      button({ label: prep.items.length > 1 ? 'All done' : 'Done', variant: 'secondary', size: 'm', cls: 'btn--auto btn--compact', onClick: () => {
-        store.set((d) => { d.plan.prepDone[prep.key] = true; });
-        haptic(10);
-        toast('Nice. Tomorrow has a head start.', { iconName: 'success', action: { label: 'Undo', onClick: () => { store.set((d) => { delete d.plan.prepDone[prep.key]; }); refresh(); } } });
-        refresh();
-      } }))) : null;
+  // Prep (DS v1.3 "show one, see all"): one Reminder on Today, the rest one tap away.
+  const prepCard = prepBlock(s);
 
   const served = s.served && s.served.date === tk && !entry(s, tk, s.served.meal) ? s.served : null;
   const planned = planDay(tk)?.meals?.[now];
@@ -193,11 +176,106 @@ export function todayScreen() {
     // Day in time order: what he ate earlier → tonight's prep → the decision (Figma T01).
     if (earlierBlock) blocks.push(earlierBlock);
     if (prepCard) blocks.push(prepCard);
-    blocks.push(decisionCard(now));
+    const cards = decisionCard(now, { planCard: true });
+    blocks.push(...(Array.isArray(cards) ? cards : [cards]));
   }
 
   const { el } = shell({ cls: 'today', label: 'Today', bar: childHeader(), body: rise(blocks), tabs: 'today' });
   return { el, onLeave: el.cleanup };
+}
+
+/* ---------- Prep on Today: one Reminder, "See all prep · N" opens the sheet ---------- */
+function prepBlock(s) {
+  const p = prepPlan(s);
+  if (!p.all.length) return null;
+  // Everything ticked: a quiet line for the rest of the day (it doesn't vanish suddenly).
+  if (!p.lead) return reminderDone(p.tomorrow.length ? 'Prep done for tomorrow' : 'Prep done for today');
+  const x = p.lead;
+  const forToday = x.date === p.todayKey;
+  const markDone = (keys, msg) => {
+    if (saveFailed(() => markDone(keys, msg))) return;
+    store.set((d) => setPrepDone(d, keys, true));
+    toast(msg, { iconName: 'success', action: { label: 'Undo', onClick: () => { store.set((d) => setPrepDone(d, keys, false)); refresh(); } } });
+    refresh();
+  };
+
+  // Escalation: a must-do for tomorrow, still not done after 9 pm → the one Attention card.
+  const lateHour = sim.on('late') || new Date().getHours() >= 21;
+  if (x.must && !forToday && lateHour) {
+    const soaked = /soak (.+?)( before bed| in water)?$/i.exec(x.text);
+    const what = soaked ? capFirst(soaked[1].replace(/^\d+\s+/, '')) : x.recipe.name;
+    return attention({
+      title: soaked ? `${what} isn’t soaked yet` : `${x.recipe.name} needs this tonight`,
+      body: `Tomorrow’s ${x.recipe.name.toLowerCase()} needs it. ${soaked ? 'Soak it now' : 'Do it now'}, or swap to a ${mealWord(x.meal)} that needs nothing tonight.`,
+      action: button({ label: `Swap ${mealWord(x.meal)}`, variant: 'secondary', size: 'm', cls: 'btn--auto btn--compact', onClick: () => swapNoPrep(x.date, x.meal) }),
+    });
+  }
+
+  return reminder({
+    title: forToday ? 'Get ready for today' : 'Get ready for tomorrow',
+    line: `${x.recipe.name} · ${x.text}`,
+    meta: p.open.length > 1 ? `${x.mins} min · 1 of ${p.open.length}` : `${x.mins} min`,
+    tag: x.must && !forToday ? 'Needs tonight' : '',
+    onDone: () => markDone([x.key], 'Done. One less thing for tomorrow.'),
+    seeAll: p.open.length > 1 ? { label: `See all prep · ${p.open.length}`, onClick: () => prepSheet() } : null,
+  });
+}
+
+/** Swap a planned meal for one that needs no prep tonight (from the Attention card). */
+function swapNoPrep(date, meal) {
+  const s = store.get();
+  const prev = s.plan.days[date]?.meals?.[meal];
+  const next = planAlternatives(s, date, meal, 20).find((r) => !r.prep);
+  if (!next) { toast('No other idea fits without prep. Try soaking now.', { iconName: 'info' }); return; }
+  store.set((d) => { d.plan.days[date].meals[meal] = next.id; });
+  refresh();
+  toast(`Swapped to ${next.name}. Nothing to do tonight.`, { iconName: 'swap', action: { label: 'Undo', onClick: () => { store.set((d) => { d.plan.days[date].meals[meal] = prev; }); refresh(); } } });
+}
+
+/** "Prep for today and tomorrow": every step in two groups, each with its own tick. */
+function prepSheet() {
+  let api;
+  const s = store.get();
+  const p = prepPlan(s);
+  const changed = new Set();
+  const row = (x) => {
+    const tick = h('button', { type: 'button', class: 'msg__tick prep-row__tick', 'aria-pressed': String(x.done), 'aria-label': `${x.done ? 'Done' : 'Mark done'}: ${x.recipe.name}, ${x.text}`, html: icon('check') });
+    const line = x.doneLastNight ? `${x.text} · done last night` : `${x.text}${x.mins ? ` · ${x.mins} min` : ''}`;
+    const el = h('li', { class: 'prep-row' + (x.done ? ' is-done' : '') },
+      h('div', { class: 'prep-row__main' },
+        h('div', { class: 'prep-row__head' },
+          x.meal ? h('span', { class: `tag tag--meal-${x.meal}`, text: mealOf(x.meal).name }) : h('span', { class: 'tag tag--status', text: 'Snack stock' }),
+          h('span', { class: 'prep-row__dish', text: x.recipe.name }),
+          x.must && !x.done ? h('span', { class: 'tag tag--guide', text: 'Needs tonight' }) : null),
+        h('p', { class: 'prep-row__line', text: line })),
+      tick);
+    tick.addEventListener('click', () => {
+      const on = tick.getAttribute('aria-pressed') !== 'true';
+      if (on && saveFailed()) return;
+      tick.setAttribute('aria-pressed', String(on)); el.classList.toggle('is-done', on); haptic(10);
+      store.set((d) => (x.stock ? markStock(d, x.stock, on) : setPrepDone(d, [x.key], on)));
+      changed.add(x.key);
+    });
+    return el;
+  };
+  const group = (label, items) => (items.length ? h('section', { class: 'prep-group', 'aria-label': label },
+    h('h3', { class: 't-label prep-group__label', text: label }), h('ul', { class: 'prep-list' }, items.map(row))) : null);
+  const markAll = button({ label: 'Mark all done', onClick: () => {
+    const keys = prepPlan(store.get()).open.filter((x) => !x.stock).map((x) => x.key);
+    const stock = prepPlan(store.get()).open.filter((x) => x.stock);
+    if (saveFailed()) return;
+    store.set((d) => { setPrepDone(d, keys, true); stock.forEach((x) => markStock(d, x.stock, true)); });
+    api.close();
+    toast('All prep done. Nice.', { iconName: 'success', action: { label: 'Undo', onClick: () => { store.set((d) => setPrepDone(d, keys, false)); refresh(); } } });
+  } });
+  const close = button({ label: 'Close', variant: 'text', cls: 'btn--auto', onClick: () => api.close() });
+  api = openSheet({
+    title: 'Prep for today and tomorrow',
+    sub: `Small steps, ${Math.max(5, ...p.all.map((x) => x.mins || 5))} minutes or less.`,
+    body: h('div', { class: 'prep-sheet' }, group('Today', p.today), group('Tomorrow', p.tomorrow)),
+    foot: h('div', { class: 'prep-sheet__foot' }, markAll, close),
+    onClose: () => refresh(),
+  });
 }
 
 /** Earlier today: logged meals with how he ate, and optional + rows for the rest. */
@@ -230,7 +308,7 @@ function earlierToday(s, tk, earlier, { title = 'Earlier today' } = {}) {
    (Fitts: full-width ~96 px targets) → "Or pick a ready idea": exactly 3 rows (Hick),
    "Best fit" the only tag (Von Restorff) → "None of these?" opens 3 more, then Ask.
    Used for the current meal, and for the next meal once this one is logged. */
-function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
+function decisionCard(meal, { date = todayKey(), tomorrow = false, planCard = false } = {}) {
   const s = store.get();
   const offline = isOffline();
   const heading = tomorrow ? `Tomorrow’s ${mealWord(meal)}` : mealHeading(meal);
@@ -245,7 +323,7 @@ function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
   const ideas = [...(plannedOk ? [plannedOk] : []), ...readyIdeas(meal, s, [...eatenIds, ...(plannedOk ? [plannedOk.id] : [])])].slice(0, 3);
 
   const family = h('button', { type: 'button', class: 'start-card start-card--family' },
-    h('span', { class: 'start-card__art', html: icon('pot') }),
+    h('span', { class: 'start-card__art start-card__art--illo', html: icon('illoPot') }),
     h('span', { class: 'start-card__text' },
       h('span', { class: 'start-card__title', text: ['lunch', 'dinner'].includes(meal) ? `The family’s ${mealWord(meal)}` : 'What the family eats' }),
       h('span', { class: 'start-card__sub', text: 'His plate from your cooking' })),
@@ -253,7 +331,7 @@ function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
   family.addEventListener('click', () => navigate('family-dinner'));
 
   const home = h('button', { type: 'button', class: 'start-card start-card--home', 'aria-disabled': offline ? 'true' : null },
-    h('span', { class: 'start-card__art', html: icon('basket') }),
+    h('span', { class: 'start-card__art start-card__art--illo', html: icon('illoBasket') }),
     h('span', { class: 'start-card__text' },
       h('span', { class: 'start-card__title', text: 'What’s at home' }),
       h('span', { class: 'start-card__sub', text: offline ? 'Needs internet' : homeSummary(s) })),
@@ -264,6 +342,21 @@ function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
     navigate('home');
   });
 
+  // Planned day (usability round): the plan's dish gets its own photo card with a short
+  // preview, "What the family eats" comes right after it, then the rest as before.
+  if (planCard && plannedOk) {
+    const others = readyIdeas(meal, s, [...eatenIds, plannedOk.id]).slice(0, 3);
+    const rest = h('section', { class: 'card decide-card decide-card--rest', 'aria-labelledby': `decide-${meal}` },
+      h('h2', { class: 't-section-title', id: `decide-${meal}`, text: 'Or something else' }),
+      h('div', { class: 'decide-card__starts' }, home),
+      others.length ? h('div', { class: 'decide-card__ideas' },
+        h('h3', { class: 'decide-card__label', text: meal === 'snack' ? 'Ready to eat · nothing to cook' : 'Or pick a ready idea' }),
+        h('div', { class: 'idea-list idea-list--flat' }, others.map((r, i) => ideaRow(r, { tag: i === 0 ? 'Best fit' : null }))),
+        h('button', { type: 'button', class: 'link decide-card__none', onClick: () => moreIdeasSheet(meal, [plannedOk.id, ...others.map((r) => r.id)]) },
+          h('span', { class: 'contents', html: icon('refresh') }), h('span', { text: 'None of these? Show other ideas' }))) : null);
+    return [plannedPhotoCard(plannedOk, meal, s), h('div', { class: 'card decide-card decide-card--solo' }, family), rest];
+  }
+
   const rows = ideas.map((r, i) => ideaRow(r, { tag: i === 0 ? (plannedOk && r.id === plannedOk.id ? 'From your plan' : 'Best fit') : null }));
   return h('section', { class: 'card decide-card', 'aria-labelledby': `decide-${meal}` },
     h('p', { class: `eyebrow eyebrow--${meal}` }, h('span', { class: 'contents', html: icon(meal) }), h('span', { text: heading })),
@@ -271,7 +364,7 @@ function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
     h('div', { class: 'decide-card__starts' }, family, home),
     ideas.length
       ? h('div', { class: 'decide-card__ideas' },
-        h('h3', { class: 'decide-card__label', text: 'Or pick a ready idea' }),
+        h('h3', { class: 'decide-card__label', text: meal === 'snack' ? 'Ready to eat · nothing to cook' : 'Or pick a ready idea' }),
         h('div', { class: 'idea-list idea-list--flat' }, rows),
         h('button', { type: 'button', class: 'link decide-card__none', onClick: () => moreIdeasSheet(meal, ideas.map((r) => r.id)) },
           h('span', { class: 'contents', html: icon('refresh') }), h('span', { text: 'None of these? Show other ideas' })))
@@ -279,6 +372,25 @@ function decisionCard(meal, { date = todayKey(), tomorrow = false } = {}) {
         h('p', { class: 'decide-card__empty-title', text: 'No ready ideas yet' }),
         h('p', { class: 'row__meta', text: 'Add a few foods he eats, or start from the family’s food above.' }),
         button({ label: 'Add foods he eats', variant: 'secondary', size: 'm', cls: 'btn--auto', onClick: () => navigate('his-foods') })));
+}
+
+/** The planned dish: photo, meal + "From your plan", name, two short info lines, Make this. */
+function plannedPhotoCard(r, meal, s) {
+  const home = homeToday(s);
+  const missing = (r.needs || []).filter((n) => !home.includes(n)).map((n) => ingredient(n)?.name.toLowerCase()).filter(Boolean);
+  const count = (r.ingredients || []).length;
+  const line1 = [r.custom ? 'Your dish' : `${r.mins} min`, count ? `${count} ingredient${count === 1 ? '' : 's'}` : null,
+    missing.length ? `Need ${joinNice(missing.slice(0, 2))}` : 'All at home'].filter(Boolean).join(' · ');
+  const tip = r.tip ? capFirst(r.tip) : '';   // one line, trimmed with … by CSS
+  return h('section', { class: 'card feature planned-card', 'aria-labelledby': 'planned-t' },
+    r.photo ? h('img', { class: 'feature__img', src: photoUrl(r.photo), alt: r.name, width: '362', height: '190', loading: 'eager' })
+      : h('div', { class: 'feature__art planned-card__art', html: icon('illoPlate') }),
+    h('div', { class: 'feature__body' },
+      h('div', { class: 'tag-row' }, h('span', { class: `tag tag--meal-${meal}`, text: mealHeading(meal) }), h('span', { class: 'tag tag--status', text: 'From your plan' })),
+      h('h2', { class: 'feature__title', id: 'planned-t', text: r.name }),
+      h('p', { class: 'planned-card__line', text: line1 }),
+      tip ? h('p', { class: 'planned-card__tip', text: tip }) : null,
+      button({ label: 'Make this', onClick: () => openRecipe(r) })));
 }
 
 /* ---------- K01 · How did he eat? ---------- */
@@ -602,8 +714,14 @@ export function plateScreen() {
    T09 · What's at home (+ T09g meal and time, V01 listening) · T09f all items
    ========================================================================== */
 export function homeScreen() {
+  // A new day starts with nothing ticked; yesterday's list is kept as "last time".
+  if (store.get().home.todayDate !== todayKey()) {
+    store.set((d) => {
+      if (d.home.today && d.home.today.length) d.home.lastToday = [...d.home.today];
+      d.home.today = []; d.home.todayDate = todayKey();
+    });
+  }
   const s0 = store.get();
-  if (!s0.home.today) store.set((d) => { d.home.today = [...d.home.usual]; });
   if (!s0.home.meal) store.set((d) => { d.home.meal = mealNow(); });
 
   const ctx = h('p', { class: 'home__ctx' });
@@ -643,6 +761,21 @@ export function homeScreen() {
     if (added.length) toast(`Added ${joinNice(added)}`, { iconName: 'success' });
   }
 
+  // Nothing is pre-ticked. If she had a list before, one tap brings it back.
+  const lastWrap = h('div', { class: 'home__last' });
+  function paintLast() {
+    const s = store.get();
+    const last = (s.home.lastToday || []).filter((id) => ingredient(id));
+    if (s.home.today.length) { lastWrap.replaceChildren(); return; }
+    lastWrap.replaceChildren(last.length
+      ? button({ label: 'Use last time’s list', variant: 'secondary', size: 'm', iconName: 'refresh', cls: 'btn--auto', onClick: () => {
+        store.set((d) => { d.home.today = [...last]; d.home.usual = [...new Set([...d.home.usual, ...last])]; });
+        paintUsual(); paintLast();
+        toast(`Ticked ${last.length} things from last time`, { iconName: 'success', action: { label: 'Undo', onClick: () => { store.set((d) => { d.home.today = []; }); paintUsual(); paintLast(); } } });
+      } })
+      : h('p', { class: 't-help', text: 'Tick what you have. We’ll remember it for next time.' }));
+  }
+
   function paintUsual() {
     const s = store.get();
     const today = new Set(s.home.today);
@@ -652,10 +785,26 @@ export function homeScreen() {
       onToggle: (on, c) => {
         store.set((d) => { d.home.today = on ? [...new Set([...d.home.today, id])] : d.home.today.filter((x) => x !== id); });
         c.setChecked(on);
+        paintLast();
       },
     })));
   }
   paintUsual();
+  paintLast();
+
+  // Snacks at home: homemade jars and bought packets, each Plenty / Running low / Finished.
+  const STOCK_OPTS = [{ id: 'plenty', name: 'Plenty' }, { id: 'low', name: 'Running low' }, { id: 'finished', name: 'Finished' }];
+  const snacks = h('div', { class: 'card snack-stock' }, SNACK_STOCK.map((d) => {
+    const r = recipe(d.id);
+    if (!r || !recipeSafe(r, store.get())) return null;
+    const seg = segmented({ options: STOCK_OPTS, value: stockStatus(store.get(), d.id), label: `${r.name} at home`,
+      onChange: (st) => { store.set((x) => setStock(x, d.id, st)); haptic(8); } });
+    seg.classList.add('segmented--s');
+    return h('div', { class: 'snack-stock__row' },
+      h('div', { class: 'snack-stock__name' }, h('span', { text: r.name }),
+        h('span', { class: 't-meta', text: d.kind === 'stock' ? `Homemade · keeps ${d.keepsDays} days` : 'Bought' })),
+      seg);
+  }));
 
   search.input.addEventListener('input', () => {
     const q = search.input.value.trim().toLowerCase();
@@ -692,7 +841,10 @@ export function homeScreen() {
       ctx,
       h('div', { class: 'block-gap' }, search), results,
       h('div', { class: 'section-label section-gap' }, h('h2', { class: 't-label', text: 'Usually at home' }), seeAll),
+      lastWrap,
       usual,
+      h('h2', { class: 't-label section-gap', text: 'Snacks at home' }),
+      snacks,
       h('h2', { class: 't-label section-gap', text: 'Anything to keep in mind? (optional)' }),
       noteField,
     ],
@@ -892,9 +1044,9 @@ export function nothingScreen() {
   const apply = (id) => {
     store.set((d) => {
       if (id === 'time' || id === 'both') d.home.time = 20;
-      if (id === 'staples' || id === 'both') d.home.today = [...new Set([...(d.home.today || d.home.usual), 'rice', 'moong-dal'])];
+      if (id === 'staples' || id === 'both') d.home.today = [...new Set([...(d.home.today || []), 'rice', 'moong-dal'])]; d.home.todayDate = todayKey();
       if (id.startsWith('add:')) {
-        d.home.today = [...new Set([...(d.home.today || d.home.usual), id.slice(4)])];
+        d.home.today = [...new Set([...(d.home.today || []), id.slice(4)])]; d.home.todayDate = todayKey();
         if (d.home.time < 20) d.home.time = 20;
       }
     });
@@ -932,6 +1084,9 @@ export function recipeScreen() {
   const months = ageInMonths(s.child.birth);
   const missing = new Set((s.ui.missing || {})[r.id] || []);
   const bf = backupFood();
+
+  // A dish she typed herself: name, what it needs, her own notes. No steps, no photo.
+  if (r.custom) return customDishScreen(r, s, unsafe);
 
   const hero = h('div', { class: 'recipe__hero' },
     r.photo ? h('img', { class: 'recipe__img', src: photoUrl(r.photo), alt: r.name, width: '402', height: '300' }) : h('div', { class: 'recipe__img recipe__img--art', html: icon('bowl') }),
@@ -974,13 +1129,20 @@ export function recipeScreen() {
       h('span', { class: 'step__n', 'aria-hidden': 'true', text: String(i + 1) }),
       h('span', { class: 'step__text', text: st })))));
 
+  const served = servedButton(r, unsafe);
+  const { el } = shell({ cls: 'recipe', label: r.name, body: [hero, body], footer: [served] });
+  return { el, onLeave: el.cleanup };
+}
+
+/** Footer of a recipe: Served it, or a way back when it is not for now. */
+function servedButton(r, unsafe) {
   // Already served (opened again from Today's "How did he eat?" card): don't serve twice.
   const cur = store.get().served;
   const alreadyServed = cur && cur.date === todayKey() && cur.recipe === r.id;
   // Opened from Plan for another day: reading ahead, nothing to serve yet.
   const ctx = store.get().ui.recipeCtx;
   const future = ctx && ctx.k !== todayKey();
-  const served = unsafe ? button({ label: 'Pick something else', onClick: () => back() })
+  return unsafe ? button({ label: 'Pick something else', onClick: () => back() })
     : alreadyServed ? button({ label: 'Back to Today', variant: 'secondary', onClick: () => back() })
     : future ? button({ label: `Back to the plan`, variant: 'secondary', onClick: () => back() }) : button({
     label: 'Served it',
@@ -996,9 +1158,41 @@ export function recipeScreen() {
       toast('Enjoy. Tell us how he ate when he’s done.', { iconName: 'heart' });
     },
   });
+}
 
-  const { el } = shell({ cls: 'recipe', label: r.name, body: [hero, body], footer: [served] });
-  return { el, onLeave: el.cleanup };
+/** "Make this" on a dish she typed: plate, name, what it needs, her notes (saved as she types). */
+function customDishScreen(r, s, unsafe) {
+  const bad = (r.allergens || []).filter((a) => avoids(a, s)).map((a) => allergyName(a).toLowerCase());
+  const notesId = 'dish-notes';
+  const notes = h('textarea', { id: notesId, class: 'field__input field__input--area', rows: '4', maxlength: '400', placeholder: 'How you make it, or what he likes in it' });
+  notes.value = r.notes || '';
+  let t;
+  const saved = h('p', { class: 'field__help', 'aria-live': 'polite' });
+  notes.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      store.set((d) => { const c = (d.customDishes || []).find((x) => x.id === r.id); if (c) c.notes = notes.value.trim(); });
+      saved.textContent = 'Saved';
+    }, 500);
+  });
+  const ings = r.ingredients.length
+    ? h('ul', { class: 'ings' }, r.ingredients.map(([, name]) => h('li', { class: 'ing' }, h('span', { class: 'ing__name', text: name }))))
+    : h('p', { class: 't-help', text: 'Nothing added. Add things you need from the plan.' });
+  const hero = h('div', { class: 'recipe__hero' },
+    h('div', { class: 'recipe__img recipe__img--art recipe__img--plate', html: icon('illoPlate') }),
+    h('div', { class: 'recipe__float' }, iconButton({ iconName: 'back', label: 'Go back', cls: 'icon-btn--float', onClick: () => back() })));
+  const body = h('div', { class: 'recipe__sheet' },
+    h('h1', { class: 't-title-l', text: r.name }),
+    unsafe ? h('div', { class: 'alert', role: 'alert' }, h('span', { class: 'contents', html: icon('allergy') }),
+      h('div', {}, h('p', { class: 'alert__title', text: bad.length ? `Has ${joinNice(bad)}. Not safe for ${kid()}` : `Not right for ${kid()}’s diet` }),
+        h('p', { class: 'alert__body', text: 'It is on his allergy list. Please pick something else.' }))) : null,
+    h('ul', { class: 'tag-list', 'aria-label': 'About this dish' }, h('li', { class: 'tag-pill', text: 'Your dish' })),
+    h('h2', { class: 't-title-s section-gap', text: 'Ingredients' }), ings,
+    h('div', { class: 'field section-gap' },
+      h('label', { class: 't-title-s dish-notes__label', for: notesId, text: 'Notes' }),
+      h('div', { class: 'field__control field__control--area' }, notes), saved));
+  const { el } = shell({ cls: 'recipe', label: r.name, body: [hero, body], footer: [servedButton(r, unsafe)] });
+  return { el, onLeave() { clearTimeout(t); el.cleanup?.(); } };
 }
 
 function swapRecipe(r) {

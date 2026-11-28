@@ -107,6 +107,9 @@ function applyTheme() {
   }
 }
 media.addEventListener?.('change', applyTheme);
+// Profile → Appearance and the prototype panel both just set store.theme; this keeps them in sync.
+let lastTheme = store.get().theme;
+store.subscribe((st) => { if (st.theme !== lastTheme) { lastTheme = st.theme; applyTheme(); } });
 
 /* ---------- Network: Today changes one card when offline (E01) ---------- */
 function onNetwork() {
@@ -210,6 +213,7 @@ function mountTools() {
     ['voice', 'mic', 'Voice not understood', 'Any mic button'],
     ['slow', 'clock', 'Slow loading', 'Ideas take a few seconds'],
     ['ideas', 'offline', 'Ideas fail to load', 'Ask, What’s at home'],
+    ['late', 'clock', 'It’s after 9 pm', 'A must-do prep step not done yet becomes an Attention card'],
   ];
   const simBtns = SIMS.map(([k, ic, name, hint]) => {
     const b = h('button', { type: 'button', class: 'proto-tools__btn proto-tools__btn--toggle', title: hint });
@@ -219,7 +223,7 @@ function mountTools() {
       b.setAttribute('aria-pressed', String(on));
       b.setAttribute('aria-label', `Simulate: ${name}. ${hint}. ${on ? 'On' : 'Off'}`);
     };
-    b.addEventListener('click', () => { sim.set(k, !sim.on(k)); paint(); toast(`${name}: ${sim.on(k) ? 'on' : 'off'}`, { iconName: 'info' }); });
+    b.addEventListener('click', () => { sim.set(k, !sim.on(k)); paint(); if (k === 'late' && currentRoute() === 'today') navigate('today', { replace: true, transition: 'fade' }); toast(`${name}: ${sim.on(k) ? 'on' : 'off'}`, { iconName: 'info' }); });
     paint();
     return b;
   });

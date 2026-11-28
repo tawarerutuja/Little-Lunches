@@ -64,7 +64,7 @@ export const CUISINES = [
   { id: 'south-indian', name: 'South Indian', meta: 'Idli, dosa, sambar', photo: 'cuisine-south-indian' },
   { id: 'maharashtrian', name: 'Maharashtrian', meta: 'Poha, bhakri, varan', photo: 'cuisine-maharashtrian' },
   { id: 'gujarati', name: 'Gujarati', meta: 'Thepla, khichdi, kadhi', photo: 'cuisine-gujarati' },
-  { id: 'mixed', name: 'Mixed or other', meta: 'Tell us in your words', photo: 'cuisine-mixed', opensSheet: true },
+  { id: 'mixed', name: 'Something else', meta: 'Type your family’s food', photo: 'cuisine-mixed', opensSheet: true },
 ];
 
 export const REGIONAL_CUISINES = ['Konkani', 'Punjabi', 'Bengali', 'Kerala', 'Rajasthani', 'Bihari', 'Sindhi'];
@@ -120,6 +120,13 @@ export const FOODS = [
   { id: 'sarson-saag', name: 'Sarson ka saag', photo: null, allergens: ['mustard'] },
   { id: 'boiled-egg', name: 'Boiled egg', photo: null, allergens: ['egg'] },
   { id: 'fish-curry-rice', name: 'Fish curry rice', photo: null, allergens: ['fish'] },
+  // Ready snacks (usability round)
+  { id: 'apple', name: 'Apple', photo: null, allergens: [] },
+  { id: 'murmura', name: 'Murmura', photo: null, allergens: [] },
+  { id: 'rice-cakes', name: 'Rice cakes', photo: null, allergens: [] },
+  { id: 'roasted-makhana', name: 'Roasted makhana', photo: null, allergens: [] },
+  { id: 'dry-fruit-ladoo', name: 'Dry fruit ladoo', photo: null, allergens: ['treenuts'] },
+  { id: 'ragi-ladoo', name: 'Ragi and date ladoo', photo: null, allergens: [] },
   // Twists: a food he already eats plus one new thing (from the interviews:
   // "I usually give variations of food he already likes"). They join "Foods he eats"
   // once he has them.
@@ -203,6 +210,7 @@ export const INGREDIENT_GROUPS = [
   { id: 'veg', name: 'Vegetables' },
   { id: 'dairy', name: 'Dairy and eggs' },
   { id: 'fruit', name: 'Fruit' },
+  { id: 'snacks', name: 'Ready snacks' },
 ];
 
 // `words` = what parents actually type or say: English, Hindi, Marathi (Latin and Devanagari).
@@ -210,7 +218,7 @@ export const INGREDIENTS = [
   { id: 'rice', name: 'Rice', group: 'grains', words: ['rice', 'chawal', 'chaawal', 'bhat', 'bhaat', 'chaval', 'चावल', 'भात'] },
   { id: 'moong-dal', name: 'Moong dal', group: 'grains', words: ['moong', 'mung', 'moong dal', 'dal', 'daal', 'varan', 'मूंग', 'दाल', 'वरण'] },
   { id: 'toor-dal', name: 'Toor dal', group: 'grains', words: ['toor', 'tuvar', 'arhar', 'तूर', 'अरहर'] },
-  { id: 'atta', name: 'Atta', group: 'grains', allergens: ['wheat'], words: ['atta', 'wheat flour', 'gehu', 'kanik', 'आटा', 'कणिक'] },
+  { id: 'atta', name: 'Atta', group: 'grains', allergens: ['wheat'], words: ['atta', 'wheat flour', 'gehu', 'kanik', 'paratha', 'roti', 'chapati', 'phulka', 'thepla', 'आटा', 'कणिक'] },
   { id: 'poha', name: 'Poha', group: 'grains', words: ['poha', 'pohe', 'flattened rice', 'पोहा', 'पोहे'] },
   { id: 'besan', name: 'Besan', group: 'grains', words: ['besan', 'gram flour', 'chickpea flour', 'बेसन'] },
   { id: 'rava', name: 'Rava', group: 'grains', allergens: ['wheat'], words: ['rava', 'sooji', 'suji', 'semolina', 'रवा', 'सूजी'] },
@@ -218,21 +226,25 @@ export const INGREDIENTS = [
   { id: 'oats', name: 'Oats', group: 'grains', words: ['oats', 'oat', 'ओट्स'] },
   { id: 'carrot', name: 'Carrot', group: 'veg', words: ['carrot', 'gajar', 'gajjar', 'गाजर'] },
   { id: 'potato', name: 'Potato', group: 'veg', words: ['potato', 'aloo', 'alu', 'batata', 'आलू', 'बटाटा'] },
-  { id: 'spinach', name: 'Spinach', group: 'veg', words: ['spinach', 'palak', 'palakh', 'पालक'] },
+  { id: 'spinach', name: 'Spinach', group: 'veg', perishable: true, words: ['spinach', 'palak', 'palakh', 'पालक'] },
   { id: 'bhindi', name: 'Bhindi', group: 'veg', words: ['bhindi', 'okra', 'lady finger', 'ladyfinger', 'bhendi', 'भिंडी', 'भेंडी'] },
   { id: 'tomato', name: 'Tomato', group: 'veg', words: ['tomato', 'tamatar', 'tamater', 'टमाटर'] },
   { id: 'peas', name: 'Peas', group: 'veg', words: ['peas', 'pea', 'matar', 'mattar', 'vatana', 'मटर', 'वाटाणा'] },
   { id: 'cucumber', name: 'Cucumber', group: 'veg', words: ['cucumber', 'kheera', 'khira', 'kakdi', 'kakadi', 'खीरा', 'काकडी'] },
-  { id: 'curd', name: 'Curd', group: 'dairy', allergens: ['curd'], words: ['curd', 'dahi', 'yogurt', 'yoghurt', 'दही'] },
-  { id: 'milk', name: 'Milk', group: 'dairy', allergens: ['milk'], words: ['milk', 'doodh', 'dudh', 'दूध'] },
+  { id: 'curd', name: 'Curd', group: 'dairy', perishable: true, allergens: ['curd'], words: ['curd', 'dahi', 'yogurt', 'yoghurt', 'दही'] },
+  { id: 'milk', name: 'Milk', group: 'dairy', perishable: true, allergens: ['milk'], words: ['milk', 'doodh', 'dudh', 'दूध'] },
   { id: 'eggs', name: 'Eggs', group: 'dairy', allergens: ['egg'], diet: 'egg', words: ['egg', 'eggs', 'anda', 'ande', 'अंडा', 'अंडे'] },
-  { id: 'paneer', name: 'Paneer', group: 'dairy', allergens: ['paneer'], words: ['paneer', 'cottage cheese', 'पनीर'] },
+  { id: 'paneer', name: 'Paneer', group: 'dairy', perishable: true, allergens: ['paneer'], words: ['paneer', 'cottage cheese', 'पनीर'] },
   { id: 'ghee', name: 'Ghee', group: 'dairy', allergens: ['ghee'], words: ['ghee', 'tup', 'घी', 'तूप'] },
-  { id: 'banana', name: 'Banana', group: 'fruit', words: ['banana', 'kela', 'keli', 'केला', 'केळी'] },
+  { id: 'banana', name: 'Banana', group: 'fruit', perishable: true, words: ['banana', 'kela', 'keli', 'केला', 'केळी'] },
   { id: 'apple', name: 'Apple', group: 'fruit', words: ['apple', 'seb', 'safarchand', 'सेब', 'सफरचंद'] },
-  { id: 'papaya', name: 'Papaya', group: 'fruit', words: ['papaya', 'papita', 'पपीता'] },
+  { id: 'papaya', name: 'Papaya', group: 'fruit', perishable: true, words: ['papaya', 'papita', 'पपीता'] },
   { id: 'chikoo', name: 'Chikoo', group: 'fruit', words: ['chikoo', 'chiku', 'sapota', 'चीकू'] },
   { id: 'dates', name: 'Dates', group: 'fruit', words: ['dates', 'date', 'khajur', 'khajoor', 'खजूर'] },
+  // Ready snacks (bought). Plain and unsalted for toddlers.
+  { id: 'makhana', name: 'Makhana', group: 'snacks', words: ['makhana', 'phool makhana', 'fox nuts', 'lotus seeds', 'मखाना'] },
+  { id: 'murmura', name: 'Murmura', group: 'snacks', words: ['murmura', 'puffed rice', 'kurmura', 'mamra', 'मुरमुरा'] },
+  { id: 'rice-cakes', name: 'Rice cakes', group: 'snacks', words: ['rice cake', 'rice cakes'] },
 ];
 
 /** Request words that are not ingredients: how she wants it. */
@@ -252,6 +264,7 @@ export const BUY_QTY = {
   rice: '1 kg', 'moong-dal': '500 g', 'toor-dal': '500 g', atta: '1 kg', poha: '500 g', besan: '500 g', rava: '500 g', ragi: '500 g', oats: '500 g',
   carrot: '4', potato: '1 kg', spinach: '1 bunch', bhindi: '250 g', tomato: '4', peas: '250 g', cucumber: '2',
   curd: '500 g', milk: '1 litre', eggs: '6', paneer: '200 g', ghee: '200 g', banana: '6', apple: '4', papaya: '1', chikoo: '4', dates: '200 g',
+  makhana: '1 packet', murmura: '1 packet', 'rice-cakes': '1 packet',
 };
 
 export const DEFAULT_USUAL = ['rice', 'moong-dal', 'atta', 'poha', 'carrot', 'potato', 'tomato', 'curd', 'milk', 'ghee', 'banana'];
@@ -274,7 +287,7 @@ export const RECIPES = [
   },
   {
     id: 'curd-rice-cucumber', name: 'Curd rice with cucumber', hi: 'खीरे वाला दही-चावल', photo: 'curd-rice-cucumber', mins: 5,
-    meta: 'No cooking', meals: ['lunch', 'dinner', 'snack'], needs: ['rice', 'curd'], allergens: ['curd'], diet: 'veg',
+    meta: 'No cooking', meals: ['lunch', 'dinner'], needs: ['rice', 'curd'], allergens: ['curd'], diet: 'veg',
     tags: ['noCook', 'soft', 'cool'], groups: ['grains', 'dairy', 'veg'], food: 'curd-rice-cucumber',
     tip: 'use rice cooked today and cooled to warm, never leftover rice. Grate the cucumber fine.',
     ingredients: [['rice', 'Rice, cooked today', '½ cup'], ['curd', 'Fresh curd', '3 tbsp'], ['cucumber', 'Cucumber, grated', '2 tbsp']],
@@ -290,7 +303,7 @@ export const RECIPES = [
   },
   {
     id: 'moong-cheela', name: 'Moong dal cheela', hi: 'मूंग दाल चीला', photo: 'cheela', mins: 15,
-    meta: 'Soft, he can hold it', meals: ['breakfast', 'dinner', 'snack'], needs: ['moong-dal'], allergens: [], diet: 'veg',
+    meta: 'Soft, he can hold it', meals: ['breakfast', 'dinner'], needs: ['moong-dal'], allergens: [], diet: 'veg',
     tags: ['finger'], groups: ['dal'], food: 'cheela', prep: 'Soak moong dal before bed', prepShort: 'Soak dal tonight',
     tip: 'cook it thin and soft, then cut into strips he can hold.',
     ingredients: [['moong-dal', 'Moong dal, soaked', '¼ cup'], ['carrot', 'Carrot, grated', '1 tbsp'], ['ghee', 'Ghee', '1 tsp']],
@@ -298,7 +311,7 @@ export const RECIPES = [
   },
   {
     id: 'poha-peas', name: 'Poha with peas', hi: 'मटर वाला पोहा', photo: 'poha', mins: 10,
-    meta: 'No prep', meals: ['breakfast', 'dinner', 'snack'], needs: ['poha', 'peas'], allergens: [], diet: 'veg',
+    meta: 'No prep', meals: ['breakfast', 'dinner'], needs: ['poha', 'peas'], allergens: [], diet: 'veg',
     tags: ['quick'], groups: ['grains', 'veg'], food: 'poha',
     tip: 'make his part without peanuts or chilli and keep it soft.',
     ingredients: [['poha', 'Poha', '½ cup'], ['peas', 'Peas', '2 tbsp'], ['turmeric', 'Turmeric', 'a pinch'], ['ghee', 'Ghee', '1 tsp']],
@@ -306,7 +319,7 @@ export const RECIPES = [
   },
   {
     id: 'ragi-porridge', name: 'Ragi porridge', hi: 'रागी दलिया', photo: 'ragi-porridge', mins: 7,
-    meta: 'No chopping', meals: ['breakfast', 'snack'], needs: ['ragi'], allergens: [], diet: 'veg',
+    meta: 'No chopping', meals: ['breakfast'], needs: ['ragi'], allergens: [], diet: 'veg',
     tags: ['soft', 'quick'], groups: ['grains'], food: 'ragi-porridge',
     tip: 'make it smooth and let it cool to warm before serving.',
     ingredients: [['ragi', 'Ragi flour', '2 tbsp'], ['water', 'Water', '¾ cup'], ['banana', 'Ripe banana, mashed', '¼']],
@@ -330,7 +343,7 @@ export const RECIPES = [
   },
   {
     id: 'banana-oats', name: 'Banana and oats mash', hi: 'केला और ओट्स', photo: 'banana', mins: 5,
-    meta: 'Soft · Naturally sweet', meals: ['breakfast', 'snack'], needs: ['banana', 'oats'], allergens: [], diet: 'veg',
+    meta: 'Soft · Naturally sweet', meals: ['breakfast'], needs: ['banana', 'oats'], allergens: [], diet: 'veg',
     tags: ['soft', 'quick', 'sweet'], groups: ['grains', 'fruit'], food: 'banana-oats', adds: 'oats',
     tip: 'no sugar needed; ripe banana is sweet enough.',
     ingredients: [['oats', 'Oats', '2 tbsp'], ['banana', 'Ripe banana', '½'], ['water', 'Water', '½ cup']],
@@ -338,7 +351,7 @@ export const RECIPES = [
   },
   {
     id: 'ragi-date', name: 'Ragi and date porridge', hi: 'रागी और खजूर दलिया', photo: 'ragi-date', mins: 10,
-    meta: 'Made with water', meals: ['breakfast', 'snack'], needs: ['ragi', 'dates'], allergens: [], diet: 'veg',
+    meta: 'Made with water', meals: ['breakfast'], needs: ['ragi', 'dates'], allergens: [], diet: 'veg',
     tags: ['soft', 'sweet'], groups: ['grains', 'fruit'], food: 'ragi-date', adds: 'dates',
     tip: 'blend the soaked dates smooth so there are no pieces.',
     ingredients: [['ragi', 'Ragi flour', '2 tbsp'], ['dates', 'Dates, soaked', '2'], ['water', 'Water', '¾ cup']],
@@ -402,7 +415,7 @@ export const RECIPES = [
   },
   {
     id: 'dal-rice-balls', name: 'Dal-rice balls he can hold', hi: 'दाल-चावल के लड्डू', photo: 'khichdi-balls', mins: 10,
-    meta: 'Finger food', meals: ['lunch', 'dinner', 'snack'], needs: ['rice', 'moong-dal'], allergens: [], diet: 'veg',
+    meta: 'Finger food', meals: ['lunch', 'dinner'], needs: ['rice', 'moong-dal'], allergens: [], diet: 'veg',
     tags: ['finger'], groups: ['grains', 'dal'], food: 'khichdi-balls',
     tip: 'make the balls small and soft enough to squash between your fingers.',
     ingredients: [['rice', 'Rice, cooked today', '½ cup'], ['moong-dal', 'Thick cooked dal', '3 tbsp']],
@@ -434,7 +447,7 @@ export const RECIPES = [
   },
   {
     id: 'plain-curd-rice', name: 'Curd-rice', hi: 'दही-चावल', photo: 'curd-rice', mins: 5,
-    meta: 'No cooking', meals: ['lunch', 'dinner', 'snack'], needs: ['rice', 'curd'], allergens: ['curd'], diet: 'veg',
+    meta: 'No cooking', meals: ['lunch', 'dinner'], needs: ['rice', 'curd'], allergens: ['curd'], diet: 'veg',
     tags: ['noCook', 'soft', 'cool'], groups: ['grains', 'dairy'], food: 'curd-rice',
     tip: 'use rice cooked today, never leftover rice. Mash it well and serve cool, not cold.',
     ingredients: [['rice', 'Rice, cooked today', '½ cup'], ['curd', 'Fresh curd', '3 tbsp']],
@@ -448,10 +461,85 @@ export const RECIPES = [
     ingredients: [['banana', 'Ripe banana', '1']],
     steps: ['Peel and mash with a fork.', 'Serve straight away.'],
   },
+  /* ---- Snacks (usability round): bought or ready-made, not cooked meals ----
+     snackType 'buy' = bought or fresh fruit · 'stock' = made at home, keeps for days.
+     Safety: no whole nuts or whole dry fruit; nuts only powdered inside a ladoo. */
+  {
+    id: 'banana-pieces', name: 'Banana pieces', hi: 'केले के टुकड़े', photo: 'mashed-banana', mins: 2,
+    meta: 'Nothing to cook', meals: ['snack'], needs: ['banana'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'soft', 'finger'], groups: ['fruit'], food: 'banana', snackType: 'buy',
+    tip: 'cut a ripe banana into soft finger-length pieces he can hold.',
+    ingredients: [['banana', 'Ripe banana', '½']],
+    steps: ['Peel the banana.', 'Cut it into finger-length pieces, or mash it for younger toddlers.'],
+  },
+  {
+    id: 'apple-slices', name: 'Apple slices', hi: 'सेब के टुकड़े', photo: null, mins: 5,
+    meta: 'Nothing to cook', meals: ['snack'], needs: ['apple'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'finger'], groups: ['fruit'], food: 'apple', snackType: 'buy',
+    tip: 'peel and cut very thin slices. Under 2, steam the slices until soft.',
+    ingredients: [['apple', 'Apple', '¼']],
+    steps: ['Wash and peel the apple.', 'Cut thin slices with no core or seeds.', 'Under 2 years, steam the slices for 3 to 4 minutes until soft.'],
+  },
+  {
+    id: 'papaya-pieces', name: 'Papaya pieces', hi: 'पपीते के टुकड़े', photo: null, mins: 3,
+    meta: 'Nothing to cook', meals: ['snack'], needs: ['papaya'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'soft', 'finger'], groups: ['fruit'], food: 'papaya', snackType: 'buy',
+    tip: 'ripe papaya is soft enough to squash; cut it into strips.',
+    ingredients: [['papaya', 'Ripe papaya', '4 to 5 pieces']],
+    steps: ['Remove the skin and all the seeds.', 'Cut soft strips he can hold.'],
+  },
+  {
+    id: 'chikoo-pieces', name: 'Chikoo pieces', hi: 'चीकू के टुकड़े', photo: null, mins: 3,
+    meta: 'Nothing to cook', meals: ['snack'], needs: ['chikoo'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'soft'], groups: ['fruit'], food: 'chikoo', snackType: 'buy',
+    tip: 'take out every seed; they are hard and slippery.',
+    ingredients: [['chikoo', 'Ripe chikoo', '1']],
+    steps: ['Peel the chikoo.', 'Remove every seed.', 'Cut into small soft pieces or mash.'],
+  },
+  {
+    id: 'murmura-bowl', name: 'Murmura', hi: 'मुरमुरा', photo: null, mins: 1,
+    meta: 'Nothing to cook', meals: ['snack'], needs: ['murmura'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'finger'], groups: ['grains'], food: 'murmura', snackType: 'buy',
+    tip: 'plain murmura only, no salt or masala. It melts in the mouth.',
+    ingredients: [['murmura', 'Plain murmura', 'a small bowl']],
+    steps: ['Give a small bowl of plain murmura.', 'Stay with him while he eats.'],
+  },
+  {
+    id: 'rice-cakes-snack', name: 'Rice cakes', hi: 'राइस केक', photo: null, mins: 1,
+    meta: 'Nothing to cook', meals: ['snack'], needs: ['rice-cakes'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'finger'], groups: ['grains'], food: 'rice-cakes', snackType: 'buy',
+    tip: 'choose plain, unsalted rice cakes and break them into small pieces.',
+    ingredients: [['rice-cakes', 'Plain rice cake', '1']],
+    steps: ['Break a plain rice cake into small pieces.'],
+  },
+  {
+    id: 'roasted-makhana', name: 'Roasted makhana', hi: 'भुने मखाने', photo: null, mins: 10,
+    meta: 'From your jar', meals: ['snack'], needs: [], allergens: [], diet: 'veg',
+    tags: ['noCook', 'finger'], groups: ['grains'], food: 'roasted-makhana', snackType: 'stock',
+    tip: 'crush them for younger toddlers; whole ones only once he chews well.',
+    ingredients: [['makhana', 'Makhana', '1 cup'], ['ghee', 'Ghee', '1 tsp']],
+    steps: ['Roast the makhana in a little ghee on low heat for 8 to 10 minutes until crisp.', 'Cool fully and keep in an airtight jar.', 'Crush a few before serving for younger toddlers.'],
+  },
+  {
+    id: 'dry-fruit-ladoo', name: 'Dry fruit ladoo', hi: 'ड्राई फ्रूट लड्डू', photo: null, mins: 30,
+    meta: 'From your jar', meals: ['snack'], needs: ['dates'], allergens: ['treenuts'], diet: 'veg',
+    tags: ['noCook', 'finger', 'sweet'], groups: ['fruit'], food: 'dry-fruit-ladoo', snackType: 'stock',
+    tip: 'the nuts are powdered fine; make the ladoos small and soft. Never give whole nuts.',
+    ingredients: [['dates', 'Soft dates, seeded', '1 cup'], ['nuts', 'Almonds and cashews, ground to a fine powder', '½ cup'], ['ghee', 'Ghee', '1 tsp']],
+    steps: ['Grind the nuts to a fine powder.', 'Blend the seeded dates to a paste.', 'Warm the date paste in a little ghee, mix in the nut powder.', 'Roll small, soft ladoos. Keep in an airtight jar.'],
+  },
+  {
+    id: 'ragi-ladoo', name: 'Ragi and date ladoo', hi: 'रागी लड्डू', photo: null, mins: 25,
+    meta: 'From your jar', meals: ['snack'], needs: ['ragi', 'dates'], allergens: [], diet: 'veg',
+    tags: ['noCook', 'finger', 'sweet'], groups: ['grains', 'fruit'], food: 'ragi-ladoo', snackType: 'stock',
+    tip: 'sweetened only with dates, no sugar or jaggery. Keep them small and soft.',
+    ingredients: [['ragi', 'Ragi flour', '1 cup'], ['dates', 'Soft dates, seeded', '½ cup'], ['ghee', 'Ghee', '2 tbsp']],
+    steps: ['Roast the ragi flour in ghee on low heat until it smells nutty.', 'Blend the dates to a paste and mix in.', 'Roll small, soft ladoos. Keep in an airtight jar.'],
+  },
   /* ---- Twists: same base and method as a food he accepts, plus ONE new ingredient ---- */
   {
     id: 'palak-cheela', name: 'Palak moong cheela', hi: 'पालक मूंग चीला', photo: 'palak-cheela', mins: 15,
-    meta: 'Soft, he can hold it', meals: ['breakfast', 'dinner', 'snack'], needs: ['moong-dal', 'spinach'], allergens: [], diet: 'veg',
+    meta: 'Soft, he can hold it', meals: ['breakfast', 'dinner'], needs: ['moong-dal', 'spinach'], allergens: [], diet: 'veg',
     tags: ['finger'], groups: ['dal', 'veg'], food: 'palak-cheela', adds: 'spinach', prep: 'Soak moong dal before bed', prepShort: 'Soak dal tonight',
     tip: 'blend the palak into the batter so there are no leaves to chew.',
     ingredients: [['moong-dal', 'Moong dal, soaked', '¼ cup'], ['spinach', 'Spinach, blanched', 'a small handful'], ['ghee', 'Ghee', '1 tsp']],
@@ -459,7 +547,7 @@ export const RECIPES = [
   },
   {
     id: 'carrot-poha', name: 'Poha with carrot', hi: 'गाजर वाला पोहा', photo: 'carrot-poha', mins: 10,
-    meta: 'No prep', meals: ['breakfast', 'snack', 'dinner'], needs: ['poha', 'carrot'], allergens: [], diet: 'veg',
+    meta: 'No prep', meals: ['breakfast', 'dinner'], needs: ['poha', 'carrot'], allergens: [], diet: 'veg',
     tags: ['quick', 'soft'], groups: ['grains', 'veg'], food: 'carrot-poha', adds: 'carrot',
     tip: 'grate the carrot fine and cook it soft before adding the poha.',
     ingredients: [['poha', 'Poha', '½ cup'], ['carrot', 'Carrot, grated fine', '2 tbsp'], ['turmeric', 'Turmeric', 'a pinch'], ['ghee', 'Ghee', '1 tsp']],
@@ -467,7 +555,7 @@ export const RECIPES = [
   },
   {
     id: 'ragi-apple', name: 'Ragi porridge with apple', hi: 'सेब वाला रागी दलिया', photo: 'ragi-apple', mins: 10,
-    meta: 'Naturally sweet', meals: ['breakfast', 'snack'], needs: ['ragi', 'apple'], allergens: [], diet: 'veg',
+    meta: 'Naturally sweet', meals: ['breakfast'], needs: ['ragi', 'apple'], allergens: [], diet: 'veg',
     tags: ['soft', 'sweet'], groups: ['grains', 'fruit'], food: 'ragi-apple', adds: 'apple',
     tip: 'stew the apple until it mashes with a spoon; no sugar needed.',
     ingredients: [['ragi', 'Ragi flour', '2 tbsp'], ['apple', 'Apple, peeled and chopped', '¼'], ['water', 'Water', '1 cup']],
@@ -475,12 +563,25 @@ export const RECIPES = [
   },
   {
     id: 'carrot-curd-rice', name: 'Curd rice with carrot', hi: 'गाजर वाला दही-चावल', photo: 'carrot-curd-rice', mins: 7,
-    meta: 'Cool and soft', meals: ['lunch', 'dinner', 'snack'], needs: ['rice', 'curd', 'carrot'], allergens: ['curd'], diet: 'veg',
+    meta: 'Cool and soft', meals: ['lunch', 'dinner'], needs: ['rice', 'curd', 'carrot'], allergens: ['curd'], diet: 'veg',
     tags: ['soft', 'cool'], groups: ['grains', 'dairy', 'veg'], food: 'carrot-curd-rice', adds: 'carrot',
     tip: 'steam the grated carrot for 2 minutes so it is soft.',
     ingredients: [['rice', 'Rice, cooked today', '½ cup'], ['curd', 'Fresh curd', '3 tbsp'], ['carrot', 'Carrot, grated and steamed', '1 tbsp']],
     steps: ['Steam the grated carrot for 2 minutes.', 'Mash the cooked rice lightly and mix in the curd.', 'Stir in the carrot and serve at room temperature.'],
   },
+];
+
+/**
+ * Snacks at home (usability round). Homemade stock keeps for days; bought packets
+ * keep longer. Status is plenty / low / finished; logging a snack uses one serving.
+ * Low or finished homemade stock shows up in prep; finished bought packets go to shopping.
+ */
+export const SNACK_STOCK = [
+  { id: 'dry-fruit-ladoo', kind: 'stock', keepsDays: 14, servings: 12, mins: 30, prepLine: 'Make a batch · 30 min' },
+  { id: 'ragi-ladoo', kind: 'stock', keepsDays: 10, servings: 12, mins: 25, prepLine: 'Make a batch · 25 min' },
+  { id: 'roasted-makhana', kind: 'stock', keepsDays: 10, servings: 10, mins: 10, prepLine: 'Roast a jar in a little ghee · 10 min' },
+  { id: 'murmura-bowl', kind: 'buy', keepsDays: 30, servings: 15, ingredient: 'murmura' },
+  { id: 'rice-cakes-snack', kind: 'buy', keepsDays: 60, servings: 12, ingredient: 'rice-cakes' },
 ];
 
 /**
@@ -508,11 +609,39 @@ export const AHEAD = {
   'idli-dal': 'Soak the idli rice and dal for the batter.',
   'dal-rice-bhindi': 'Wash and cut the bhindi. Dry it well so it is not sticky.',
 };
+/** The same steps in Hindi, for the helper view (read on screen and aloud). */
+export const AHEAD_HI = {
+  'moong-cheela': 'सोने से पहले मूंग दाल भिगो दें।',
+  'palak-cheela': 'सोने से पहले मूंग दाल भिगो दें।',
+  'ragi-date': 'सोने से पहले 2 खजूर पानी में भिगोकर फ्रिज में रखें।',
+  'veg-khichdi': 'गाजर काटें और मटर छील लें। ढककर फ्रिज में रखें।',
+  'curd-rice-cucumber': 'ताज़ा दही जमा दें।',
+  'poha-peas': 'मटर छीलकर ढककर फ्रिज में रखें।',
+  'veg-upma': 'रवा सूखा भूनकर डिब्बे में रखें। गाजर काटकर ढककर फ्रिज में रखें।',
+  'egg-khichdi': 'गाजर कद्दूकस करके ढककर फ्रिज में रखें।',
+  'egg-bhurji-rice': 'टमाटर बारीक काटकर ढककर फ्रिज में रखें।',
+  'paneer-bhurji-rice': 'पनीर कद्दूकस करके ढककर फ्रिज में रखें।',
+  'palak-paneer-rice': 'पालक धोकर कपड़े में लपेटकर फ्रिज में रखें।',
+  'paneer-peas-khichdi': 'मटर छीलकर ढककर फ्रिज में रखें।',
+  'palak-dal-rice': 'पालक धोकर सुखा लें। लपेटकर फ्रिज में रखें।',
+  'roti-sabzi-curd': 'सब्ज़ी काटें और आटा गूँध लें। दोनों ढककर फ्रिज में रखें, और दही जमा दें।',
+  'plain-curd-rice': 'ताज़ा दही जमा दें।',
+  'carrot-poha': 'गाजर कद्दूकस करके ढककर फ्रिज में रखें।',
+  'carrot-curd-rice': 'गाजर कद्दूकस करके ढककर फ्रिज में रखें, और ताज़ा दही जमा दें।',
+  'idli-dal': 'इडली के घोल के लिए चावल और दाल भिगो दें।',
+  'dal-rice-bhindi': 'भिंडी धोकर काटें। अच्छे से सुखा लें ताकि चिपचिपी न हो।',
+  'dry-fruit-ladoo': 'लड्डू बनाएँ · 30 मिनट',
+  'ragi-ladoo': 'लड्डू बनाएँ · 25 मिनट',
+  'roasted-makhana': 'थोड़े घी में मखाने भूनकर डिब्बे में रखें · 10 मिनट',
+};
+
 // Dates need soaking for a smooth paste: a must-do, like moong dal for cheela.
 RECIPES.forEach((r) => {
   if (r.id === 'ragi-date') { r.prep = 'Soak 2 dates before bed'; r.prepShort = 'Soak dates tonight'; }
   // No step for dishes that need no real prep (no filler like "check you have it").
   r.ahead = r.prep || AHEAD[r.id] || null;
+  // Minutes for tonight's step (shown as "5 min" on the reminder). Soaking is quick to start.
+  r.aheadMins = r.prep ? 2 : ({ 'roti-sabzi-curd': 10, 'veg-upma': 10, 'veg-khichdi': 10 })[r.id] || 5;
 });
 
 /** Dishes she often cooks (T07 chips). `plate` = his version. */
@@ -580,7 +709,7 @@ export const SERVE_WAYS = [
 ];
 
 /* ==========================================================================
-   Learn (LN01, LN02). General guidance; sources named on every article.
+   Learn (LN01, LN02). General guidance. Each article lists its own sources.
    ========================================================================== */
 export const ARTICLES = [
   {
@@ -588,51 +717,61 @@ export const ARTICLES = [
     intro: ['After the first birthday, growth slows down, so toddlers often need less food than parents expect.', 'It is normal for him to eat well one day and very little the next. Look at the whole week, not one meal.'],
     tips: ['Serve small portions; he can always ask for more', 'Keep regular meal and snack times', 'Offer water between meals, milk with meals', 'Let him decide how much to eat'],
     doctor: 'Talk to his doctor if he seems unwell, is losing weight, or refuses most food for many days.',
+    sources: [], // Source to be added
   },
   {
     id: 'teething', title: 'Teething can stop him eating', short: 'Teething can stop him eating', icon: 'tooth', tint: 'snack', read: '2 min read', mood: 'calm',
     intro: ['Sore gums can make chewing hurt for a few days.', 'He may prefer soft, cool foods and eat less for a while.'],
     tips: ['Offer soft, cool food like curd-rice or mashed banana', 'Give a clean, cool teething ring before meals', 'Avoid hard or crunchy food for a few days', 'Do not use numbing gels unless his doctor says so'],
     doctor: 'Call his doctor if he has a high fever, will not drink, or seems very unwell. Teething does not cause high fever.',
+    sources: [], // Source to be added
   },
   {
     id: 'self-feeding', title: 'He wants to feed himself', short: 'He wants to feed himself', icon: 'hand', tint: 'breakfast', read: '2 min read', mood: 'happy',
     intro: ['Wanting to hold the spoon is a good sign of growing skills.', 'It will be messy for a while, and that is part of learning.'],
     tips: ['Give finger foods like soft cheela strips or small idli pieces', 'Let him hold a spoon while you feed with another', 'Put a mat under his chair to make clean-up easy', 'Stay with him the whole time he eats'],
     doctor: 'Always sit with him while he eats. Avoid whole nuts, whole grapes and hard pieces that can cause choking.',
+    sources: [], // Source to be added
   },
   {
     id: 'meals-longer', title: 'Meals take longer now', short: 'Meals take longer now', icon: 'clock', tint: 'dinner', read: '2 min read', mood: 'calm',
     intro: ['Toddlers are curious and easily distracted, so meals can stretch on.', 'A calm, short mealtime usually works better than a long one.'],
     tips: ['Keep meals to about 20 to 30 minutes', 'Turn off the TV and phones at the table', 'Eat together when you can', 'End the meal calmly when he stops eating'],
     doctor: 'Talk to his doctor if he often coughs, gags or seems to struggle to swallow.',
+    sources: [], // Source to be added
   },
   {
     id: 'refused-liked', title: 'He refused food he liked before', read: '2 min read', mood: 'calm', tint: 'dinner',
     intro: ['Very common between 1 and 3 years. Growth slows after the first birthday, so appetite drops.', 'A food he refuses today is often eaten again next week.'],
     tips: ['Offer a small amount next to a food he likes', 'Change the shape or texture', 'Keep mealtime calm, without pressure', 'Try again another day'],
     doctor: 'Talk to his doctor if he seems unwell, is losing weight, or refuses most food for many days.',
+    sources: [], // Source to be added
   },
   {
     id: 'enough', title: 'Is he eating enough?', read: '3 min read', mood: 'happy', tint: 'lunch',
     intro: ['Most toddlers eat enough over a week, even if some days look small.', 'His energy, sleep and growth at check-ups tell you more than one plate.'],
     tips: ['Look at the week in Memory, not one meal', 'Offer foods from different groups across the day', 'Limit milk to what his doctor suggests so he stays hungry for meals', 'Keep sweet snacks and juices small'],
     doctor: 'Talk to his doctor if he is losing weight, seems tired all the time, or has fewer wet nappies.',
+    sources: [], // Source to be added
   },
   {
     id: 'throwing', title: 'Throwing food or not sitting', read: '2 min read', mood: 'calm', tint: 'snack',
     intro: ['Throwing food is often a sign he is full or bored, not naughty.', 'Short, calm meals and a steady routine help him sit longer.'],
     tips: ['Give small amounts at a time', 'When he starts throwing, end the meal calmly', 'Use a high chair or a fixed seat', 'Praise him when he sits and eats'],
     doctor: 'If mealtimes are a struggle every day for weeks, his doctor can help.',
+    sources: [], // Source to be added
   },
 ];
-export const ARTICLE_SOURCE = { name: 'American Academy of Pediatrics (HealthyChildren.org) and WHO', url: 'https://www.healthychildren.org/English/ages-stages/toddler/nutrition/Pages/default.aspx' };
+/** Shown as "Based on: Source to be added" until an article has sources: [{ name, url }]. */
+export const SOURCE_TODO = 'Source to be added';
 
 /* ==========================================================================
    Carer view (C01–C04): Hindi and English. Marathi is "coming soon".
    ========================================================================== */
 export const CARER_LANGS = [
   { id: 'hi', name: 'हिंदी', sub: 'Hindi', ready: true },
+  // Nepali: spoken in ne-NP when the phone has that voice. Screen text is Hindi until we have a Nepali translation.
+  { id: 'ne', name: 'नेपाली', sub: 'Nepali', ready: true },
   { id: 'mr', name: 'मराठी', sub: 'Marathi', ready: false },
   { id: 'en', name: 'English', sub: '', ready: true },
 ];
@@ -675,6 +814,20 @@ export const CARER_TEXT = {
     cont: 'आगे बढ़ें',
     nothingPlanned: 'आज के लिए कुछ चुना नहीं गया है। उसका बैकअप दें।',
     saveFail: 'सेव नहीं हुआ। इंटरनेट देखें और फिर से टैप करें।', retry: 'फिर से',
+    // Voice first (usability round: one helper can't read and uses WhatsApp voice notes)
+    listen: 'सुनें', stop: 'रोकें',
+    welcome: (c) => `नमस्ते। ${c} को क्या देना है, सुनने के लिए हरा स्पीकर दबाएँ।`,
+    outcomesSpoken: 'खाने के बाद एक बटन दबाएँ। पहला: अच्छे से खाया। दूसरा: थोड़ा खाया। तीसरा: नहीं खाया।',
+    tell: (p) => `${p} को कुछ बताना है?`,
+    speak: 'बोलें',
+    micHint: 'माइक दबाएँ और बोलें। बोलने के बाद फिर से दबाएँ।',
+    listening: 'बोल रहे हैं…',
+    youSaid: (t) => `आपने कहा: “${t}”`, tapTick: 'भेजने के लिए ✓ दबाएँ।', tapTickSpoken: 'भेजने के लिए टिक दबाएँ।',
+    send: 'भेजें', again: 'फिर से बोलें', orType: 'या लिखें', typePh: 'जैसे: उसने आधी रोटी खाई', sample: 'उसने आधी रोटी खाई',
+    record: 'वॉइस नोट भेजें', recording: 'रिकॉर्ड हो रहा है…', stopRec: 'रोकें', yourNote: 'आपका वॉइस नोट', play: 'सुनें',
+    sent: (p) => `${p} को भेज दिया`,
+    micBlocked: 'माइक बंद है। ऊपर के बड़े बटन दबाएँ। उनमें लिखना नहीं पड़ता।',
+    prepToday: 'आज के लिए तैयारी', prepTomorrow: 'कल के लिए तैयारी', done: 'हो गया', prepDone: 'तैयारी हो गई',
   },
   en: {
     hello: (n) => `Hello ${n}`,
@@ -698,6 +851,19 @@ export const CARER_TEXT = {
     cont: 'Continue',
     nothingPlanned: 'Nothing is picked for now. Give his backup.',
     saveFail: 'Couldn’t save. Check the internet and tap again.', retry: 'Try again',
+    listen: 'Listen', stop: 'Stop',
+    welcome: (c) => `Namaste. Tap the green speaker to hear what to give ${c}.`,
+    outcomesSpoken: 'After the meal, tap one button. First: ate well. Second: ate some. Third: did not eat.',
+    tell: (p) => `Anything to tell ${p}?`,
+    speak: 'Speak',
+    micHint: 'Tap the mic and speak. Tap again when you finish.',
+    listening: 'Listening…',
+    youSaid: (t) => `You said: “${t}”`, tapTick: 'Tap ✓ to send.', tapTickSpoken: 'Tap tick to send.',
+    send: 'Send', again: 'Say it again', orType: 'Or type', typePh: 'e.g. He ate half the roti', sample: 'He ate half the roti',
+    record: 'Send a voice note', recording: 'Recording…', stopRec: 'Stop', yourNote: 'Your voice note', play: 'Play',
+    sent: (p) => `Sent to ${p}`,
+    micBlocked: 'The mic is off. Use the big buttons above. They work without typing.',
+    prepToday: 'Get ready for today', prepTomorrow: 'Get ready for tomorrow', done: 'Done', prepDone: 'Prep done',
   },
 };
 

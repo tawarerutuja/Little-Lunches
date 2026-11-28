@@ -3,7 +3,7 @@
 
 import {
   MEALS, MEAL_HOURS, RECIPES, INGREDIENTS, FAMILY_RULES, ALLERGEN_WORDS, FOODS,
-  RETURNING_USUAL, ALLERGIES, MORE_ALLERGIES, BUY_QTY, REQUEST_FLAGS, REQUEST_NEGATIONS, MILK_PARTS,
+  RETURNING_USUAL, ALLERGIES, MORE_ALLERGIES, BUY_QTY, REQUEST_FLAGS, REQUEST_NEGATIONS, MILK_PARTS, SNACK_STOCK,
 } from './data.js';
 import { store, findFood, avoids, avoidList } from './store.js';
 
@@ -77,7 +77,40 @@ const ROOT_VEG = ['carrot', 'potato'];
 export function recipe(id) {
   if (!id) return null;
   if (id === 'custom' && store.get().ui.customRecipe) return store.get().ui.customRecipe;
+  if (id.startsWith('c-')) return customRecipe(id);
   return RECIPES.find((r) => r.id === id) || null;
+}
+
+/* ---------- Your own dishes (usability round: 3 of 3 wanted this in Plan) ---------- */
+/** A dish she typed, shaped like a recipe so Plan, Today, Memory and shopping just work. */
+export function customRecipe(id, s = store.get()) {
+  const c = (s.customDishes || []).find((x) => x.id === id);
+  if (!c) return null;
+  const needs = c.needs || [];
+  // Allergens come from what she said it needs and from the words in its name.
+  const fromNeeds = needs.flatMap((n) => INGREDIENTS.find((i) => i.id === n)?.allergens || []);
+  const fromName = Object.entries(ALLERGEN_WORDS).filter(([, ws]) => ws.some((w) => new RegExp(`(^|\\s)${w}`, 'i').test(c.name))).map(([a]) => a);
+  return {
+    id: c.id, name: c.name, custom: true, photo: null, mins: null, meta: 'Your dish',
+    meals: ['breakfast', 'lunch', 'snack', 'dinner'], needs, allergens: [...new Set([...fromNeeds, ...fromName])], diet: 'veg',
+    tags: [], groups: [], food: null, tip: '', ahead: null, notes: c.notes || '',
+    ingredients: [...needs.map((n) => [n, INGREDIENTS.find((i) => i.id === n)?.name || n, '']), ...(c.extra || []).map((x) => ['', x, ''])],
+    steps: [],
+  };
+}
+/** Save a typed dish. Mutates draft; returns its id. */
+export function saveCustomDish(draft, { name, needs = [], extra = [] }) {
+  draft.customDishes = draft.customDishes || [];
+  const found = draft.customDishes.find((x) => x.name.toLowerCase() === name.toLowerCase());
+  if (found) { found.needs = [...new Set([...found.needs, ...needs])]; found.extra = [...new Set([...(found.extra || []), ...extra])]; return found.id; }
+  const id = `c-${Date.now().toString(36)}`;
+  draft.customDishes.unshift({ id, name, needs, extra, notes: '', made: todayKey() });
+  return id;
+}
+/** Ingredients a dish name suggests ("Aloo paratha" → potato, atta). */
+export function guessNeeds(name) {
+  const t = ` ${name.toLowerCase()} `;
+  return INGREDIENTS.filter((i) => [i.name.toLowerCase(), ...(i.words || [])].some((w) => new RegExp(`\\s${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es)?\\s`).test(t))).map((i) => i.id);
 }
 
 export function recipeSafe(r, s = store.get()) {
@@ -183,6 +216,12 @@ function score(r, s, ctx) {
   if (ctx.busy && r.mins <= 15 && !r.prep) n += 2;
   if (r.tags.includes('sameFamily')) n += 0.5;
   if (r.mins <= 10) n += 0.5;
+  // Snack time: ready-to-eat first (2 of 3 parents: a snack is bought or ready, not cooked).
+  // Homemade stock at home leads, then fruit/packets that are at home, then the rest.
+  if (ctx.meal === 'snack' && r.snackType) {
+    const atHome = (r.needs || []).every((x) => homeToday(s).includes(x));
+    n += SNACK_STOCK.some((d) => d.id === r.id && d.kind === 'stock') ? 5 : atHome ? 4 : 1.5;
+  }
   return n;
 }
 
@@ -194,6 +233,7 @@ export function rankIdeas(ctx, s = store.get()) {
   const home = ctx.home ? new Set(ctx.home) : null;
   return RECIPES
     .filter((r) => !r.familyOnly && recipeSafe(r, s))
+    .filter((r) => snackAvailable(r, s))   // no ladoo idea when the jar is empty
     // A brand-new dish only when it builds on something he accepts (or she asked for it).
     .filter((r) => ctx.allowNew || !isNewFor(r, s) || twistOk(r, s))
     .filter((r) => !ctx.meal || r.meals.includes(ctx.meal))
@@ -215,6 +255,9 @@ export function readyIdeas(mealId, s = store.get(), exclude = []) {
 }
 
 export function ideaMeta(r, s = store.get()) {
+  // Snacks from the jar are ready now: their minutes are for making a batch, not for serving.
+  if (r.snackType === 'stock') return stockStatus(s, r.id) === 'low' ? 'Ready · from your jar · running low' : 'Ready · from your jar';
+  if (r.custom) return 'Your dish';
   const parts = [`${r.mins} min`, r.meta];
   if (isNewFor(r, s)) {
     // The tag says what is new; this says why it is likely to work.
@@ -233,7 +276,8 @@ export function twistTag(r, s = store.get()) {
 
 /* ---------- What's at home ---------- */
 export function homeToday(s = store.get()) {
-  const base = s.home.today || s.home.usual;
+  // Today's ticks count only for today; otherwise the last list she confirmed (nothing for a new parent).
+  const base = (s.home.todayDate === todayKey() ? s.home.today : (s.home.lastToday ?? s.home.today)) || [];
   return base.filter((id) => !s.shopping.ranOut.includes(id));
 }
 export const ingredient = (id) => INGREDIENTS.find((i) => i.id === id);
@@ -462,7 +506,14 @@ export function entry(s, key, mealId) { return s.history[key]?.[mealId] || null;
 /** Mutates a store draft. */
 export function logMeal(draft, { date = todayKey(), meal: mealId, food = null, name, outcome = null, by = 'you', note = '', recipe: rid = null, time = fmtTime() }) {
   draft.history[date] = draft.history[date] || {};
+  const had = draft.history[date][mealId];
   draft.history[date][mealId] = { food, name, outcome, by, note, recipe: rid, time };
+  // A snack from the jar uses one serving (not twice if the same entry is re-saved).
+  const stockId = rid && SNACK_STOCK.some((d) => d.id === rid) ? rid : null;
+  if (stockId && !(had && had.recipe === rid)) {
+    const st = (draft.snackStock || []).find((x) => x.id === stockId);
+    if (st && st.servingsLeft > 0) { st.servingsLeft -= 1; st.status = st.servingsLeft <= 0 ? 'finished' : st.servingsLeft <= 2 ? 'low' : 'plenty'; }
+  }
   // A new twist he has now tried joins "Foods he eats" with how it went; Memory counts it as new.
   const f = food ? FOODS.find((x) => x.id === food) : null;
   if (f?.twistOf && outcome) {
@@ -602,20 +653,100 @@ export function planAlternatives(s, key, mealId, n = 3) {
   return [...list.filter((r) => !near.includes(r.id)), ...list.filter((r) => near.includes(r.id))].slice(0, n);
 }
 
-/** "Soak moong dal before bed" when tomorrow's planned meal needs it. */
-export function prepReminder(s = store.get()) {
-  const tomorrow = addDays(new Date(), 1);
-  const tk = dateKey(tomorrow);
-  const day = s.plan.days[tk];
-  if (!day || s.plan.prepDone[tk]) return null;
-  // Every planned meal for tomorrow gets its small "tonight" step, in meal order.
-  // Soaking (must-do) is flagged; the rest are quick head starts.
-  const items = MEALS.map((m) => m.id).filter((m) => day.meals[m])
-    .map((m) => ({ meal: m, recipe: adaptForChild(recipe(day.meals[m]), s) }))
-    .filter((x) => x.recipe && recipeSafe(x.recipe, s) && x.recipe.ahead) // only real prep; no filler steps
-    .map((x) => ({ ...x, text: /[.!?]$/.test(x.recipe.ahead) ? x.recipe.ahead : `${x.recipe.ahead}.`, must: !!x.recipe.prep }));
-  if (!items.length) return null;
-  return { key: tk, items, label: `For ${dayName(tomorrow)}`, must: items.some((x) => x.must) };
+/* ---------- Snacks at home (usability round) ---------- */
+const daysBetween = (a, b) => Math.round((fromKey(b) - fromKey(a)) / 86400000);
+/** Status of one snack at home: plenty / low / finished (finished if none, used up or past its keep date). */
+export function stockStatus(s, id) {
+  const def = SNACK_STOCK.find((x) => x.id === id);
+  const st = (s.snackStock || []).find((x) => x.id === id);
+  if (!def || !st || !st.made) return 'finished';
+  if (daysBetween(st.made, todayKey()) > def.keepsDays) return 'finished';
+  if (st.servingsLeft <= 0) return 'finished';
+  if (st.servingsLeft <= 2) return 'low';
+  return 'plenty';
+}
+/** Set from "Snacks at home" (Plenty / Running low / Finished). Mutates draft. */
+export function setStock(draft, id, status) {
+  const def = SNACK_STOCK.find((x) => x.id === id);
+  if (!def) return;
+  draft.snackStock = (draft.snackStock || []).filter((x) => x.id !== id);
+  const left = status === 'plenty' ? def.servings : status === 'low' ? 2 : 0;
+  draft.snackStock.push({ id, made: status === 'finished' ? null : todayKey(), keepsDays: def.keepsDays, servingsLeft: left, status });
+}
+/** "Made it" from prep: back to plenty with today's date (or undo to finished). */
+export function markStock(draft, id, made = true) { setStock(draft, id, made ? 'plenty' : 'finished'); }
+/** Homemade stock that is low or finished → a TODAY prep item (never must-do). */
+export function snackStockPrep(s) {
+  const r = (id) => recipe(id);
+  return SNACK_STOCK.filter((d) => d.kind === 'stock')
+    .map((d) => ({ d, st: stockStatus(s, d.id), rec: r(d.id) }))
+    .filter(({ st, rec }) => (st === 'low' || st === 'finished') && rec && recipeSafe(rec, s) && (s.snackStock || []).some((x) => x.id === rec.id))
+    .map(({ d, st, rec }) => ({
+      key: `stock|${d.id}`, date: todayKey(), meal: null, recipe: rec, stock: d.id, must: false, mins: d.mins, done: false,
+      text: `${st === 'low' ? 'Almost over' : 'Finished'}. ${d.prepLine.replace(/ · \d+ min$/, '')}`,
+    }));
+}
+/** Finished bought snacks → shopping list "Snacks" group. */
+export function snacksToBuy(s) {
+  return SNACK_STOCK.filter((d) => d.kind === 'buy' && (s.snackStock || []).some((x) => x.id === d.id) && stockStatus(s, d.id) === 'finished')
+    .map((d) => d.ingredient);
+}
+/** Can this snack be offered now? Stock snacks need some at home. */
+export function snackAvailable(r, s) {
+  if (!r.snackType) return true;
+  const def = SNACK_STOCK.find((x) => x.id === r.id);
+  if (!def) return true;                  // fresh fruit: depends on what's at home, not stock
+  return stockStatus(s, r.id) !== 'finished';
+}
+
+/* ---------- Prep: "show one, see all" (DS v1.3 pattern) ---------- */
+/** Was this prep step done? Per item; an old whole-day "done" still counts. */
+export function prepIsDone(s, date, meal) {
+  return !!(s.plan.prepItems?.[`${date}|${meal}`] || s.plan.prepDone?.[date]);
+}
+
+const prepItem = (s, date, meal, r, extra = {}) => ({
+  key: `${date}|${meal}`, date, meal, recipe: r,
+  text: (/[.!?]$/.test(r.ahead) ? r.ahead : `${r.ahead}.`).replace(/\.$/, ''),
+  must: !!r.prep, mins: r.aheadMins || 5, done: prepIsDone(s, date, meal), ...extra,
+});
+
+/**
+ * Prep for today and tomorrow.
+ * today: the planned meals still ahead today (prep done last night shows as done);
+ * tomorrow: every planned meal tomorrow with a real step (no filler).
+ * Snack stock to make again is added to `today` (see snackStockPrep).
+ */
+export function prepPlan(s = store.get()) {
+  const now = mealNow();
+  const tk = todayKey();
+  const tmk = dateKey(addDays(new Date(), 1));
+  const order = MEALS.map((m) => m.id);
+  const fromDay = (date, mealsToUse) => {
+    const day = s.plan.days[date];
+    if (!day) return [];
+    return mealsToUse.filter((m) => day.meals[m])
+      .map((m) => [m, adaptForChild(recipe(day.meals[m]), s)])
+      .filter(([, r]) => r && recipeSafe(r, s) && r.ahead)
+      .map(([m, r]) => prepItem(s, date, m, r));
+  };
+  const ahead = order.slice(order.indexOf(now));
+  const today = fromDay(tk, ahead).filter((x) => !entry(s, tk, x.meal) && !(s.served?.date === tk && s.served.meal === x.meal))
+    .map((x) => ({ ...x, doneLastNight: x.done }));
+  const stock = typeof snackStockPrep === 'function' ? snackStockPrep(s) : [];
+  const tomorrow = fromDay(tmk, order);
+  const all = [...today, ...stock, ...tomorrow];
+  const open = all.filter((x) => !x.done);
+  // The one to show: a must-do first, then what is needed soonest (today before tomorrow).
+  const lead = open.find((x) => x.must && x.date === tmk) || open.find((x) => x.date === tk) || open[0] || null;
+  return { today: [...today, ...stock], tomorrow, all, open, lead, todayKey: tk, tomorrowKey: tmk };
+}
+
+
+/** Mark prep items done (or undo). `keys` like "2026-11-28|breakfast". */
+export function setPrepDone(draft, keys, done = true) {
+  draft.plan.prepItems = draft.plan.prepItems || {};
+  keys.forEach((k) => { if (done) draft.plan.prepItems[k] = true; else delete draft.plan.prepItems[k]; });
 }
 
 /** Shopping list from the coming week's plan. */
@@ -624,6 +755,7 @@ export function shoppingList(s = store.get()) {
   const got = new Set(s.shopping.got);
   const groups = [];
   const seen = new Set();
+  const snackItems = [];   // ready-to-eat snacks in the plan + finished bought snacks
   const start = new Date();
   for (let i = 0; i < 8; i++) {
     const d = addDays(start, i);
@@ -631,13 +763,22 @@ export function shoppingList(s = store.get()) {
     const day = s.plan.days[dk];
     if (!day) continue;
     const items = [];
-    Object.entries(day.meals).forEach(([m, rid]) => {
+    MEALS.map((x) => x.id).filter((m) => day.meals[m]).forEach((m) => {
+      const rid = day.meals[m];
       if (entry(s, dk, m)) return; // already eaten: nothing to buy for it
       const r = recipe(rid);
       r?.needs.forEach((n) => {
         if (have.has(n) || seen.has(n)) return;
         seen.add(n);
-        items.push({ id: n, name: ingredient(n)?.name || n, qty: BUY_QTY[n] || '' });
+        // What it is for ("for Wed palak khichdi"), so she can swap that dish instead of buying.
+        const dayShort = i === 0 ? 'today’s' : d.toLocaleDateString('en-IN', { weekday: 'short' });
+        const item = {
+          id: n, name: ingredient(n)?.name || n, qty: BUY_QTY[n] || '',
+          forText: `for ${dayShort} ${r.name.toLowerCase()}`, forKey: dk, forMeal: m, forName: r.name,
+          // Perishable and 3+ days away: buy it closer to the day so it is fresh.
+          buyLater: ingredient(n)?.perishable && i >= 3 ? d.toLocaleDateString('en-IN', { weekday: 'short' }) : null,
+        };
+        (r.snackType === 'buy' ? snackItems : items).push(item);
       });
     });
     if (items.length) groups.push({ title: i === 0 ? 'For today' : `For ${dayName(d)}`, items });
@@ -645,7 +786,10 @@ export function shoppingList(s = store.get()) {
   const ranOut = s.shopping.ranOut.filter((n) => !seen.has(n)).map((n) => ({ id: n, name: ingredient(n)?.name || n, qty: BUY_QTY[n] || '' }));
   ranOut.forEach((x) => seen.add(x.id));
   if (ranOut.length) groups.push({ title: 'Ran out', items: ranOut });
-  const manual = s.shopping.manual.filter((x) => !seen.has(x.id));
+  // Bought snacks that are finished (Snacks at home → Finished).
+  snacksToBuy(s).filter((n) => !seen.has(n)).forEach((n) => { seen.add(n); snackItems.push({ id: n, name: ingredient(n)?.name || n, qty: BUY_QTY[n] || '', forText: 'finished at home' }); });
+  if (snackItems.length) groups.push({ title: 'Snacks', items: snackItems });
+  const manual = s.shopping.manual.filter((x) => !seen.has(x.id)).map((x) => ({ ...x, forText: x.for || '' }));
   if (manual.length) groups.push({ title: 'Added by you', items: manual });
   const all = groups.flatMap((g) => g.items);
   const open = groups.map((g) => ({ ...g, items: g.items.filter((x) => !got.has(x.id)) })).filter((g) => g.items.length);
@@ -683,13 +827,22 @@ export function seedReturning(draft) {
 
   draft.home.usual = [...RETURNING_USUAL];
   draft.home.today = null;
+  draft.home.lastToday = [...RETURNING_USUAL];   // "Use last time's list" has something to restore
   draft.shopping = { manual: [{ id: 'm-bananas', name: 'Bananas', qty: '6' }], ranOut: [], got: ['m-bananas'] };
   draft.carers = [
     { id: 'aai', name: 'Aai', relation: 'Grandmother', status: 'joined', lang: 'hi' },
     { id: 'sunita', name: 'Sunita', relation: 'Helper', status: 'pending', lang: 'hi' },
   ];
   draft.insight = { text: 'On 2 evenings he had milk after 5 pm, and both times he ate less dinner. Have you seen this too?', answered: null };
-  draft.plan = { setup: { meals: ['dinner'], busy: [1, 3], feeder: 'aai' }, days: {}, prepDone: {} };
+  draft.plan = { setup: { meals: ['dinner'], busy: [1, 3], feeder: 'aai' }, days: {}, prepDone: {}, prepItems: {} };
+  // Snacks at home: a jar of ladoo, makhana running low, murmura, rice cakes finished.
+  const ago = (n) => dateKey(addDays(new Date(), -n));
+  draft.snackStock = [
+    { id: 'dry-fruit-ladoo', made: ago(5), keepsDays: 14, servingsLeft: 6, status: 'plenty' },
+    { id: 'roasted-makhana', made: ago(6), keepsDays: 10, servingsLeft: 2, status: 'low' },
+    { id: 'murmura-bowl', made: ago(10), keepsDays: 30, servingsLeft: 8, status: 'plenty' },
+    { id: 'rice-cakes-snack', made: null, keepsDays: 60, servingsLeft: 0, status: 'finished' },
+  ];
   const mon = mondayOf(today);
   const keys = [...weekKeys(mon), ...weekKeys(addDays(mon, 7)).slice(0, 4)];
   fillPlan(draft, keys);

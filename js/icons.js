@@ -12,6 +12,11 @@ const ICONS = {
   check: line('<path d="M20 6 9 17l-5-5"/>'),
   plus: line('<path d="M5 12h14"/><path d="M12 5v14"/>'),
   mic: line('<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/>'),
+  speaker: line('<path d="M11 5 6 9H2v6h4l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>'),
+  stop: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>',
+  record: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="7" fill="currentColor"/></svg>',
+  pointer: line('<path d="M9 11V4.5a1.5 1.5 0 0 1 3 0V10"/><path d="M12 9.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M18 11.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1.5a6 6 0 0 1-4.6-2.2L4.6 16.6a1.6 1.6 0 0 1 2.4-2.1L9 16.5"/>'),
   search: line('<circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.2-4.2"/>'),
   clock: line('<circle cx="12" cy="12" r="9.5"/><path d="M12 6.5V12l3.5 2"/>'),
   plan: line('<rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M16 2.5v4"/><path d="M8 2.5v4"/><path d="M3 10h18"/>'),
@@ -85,6 +90,33 @@ const ICONS = {
   wifi: '<svg viewBox="0 0 16 12" fill="currentColor" aria-hidden="true"><path d="M8 2.4c2.3 0 4.4.9 6 2.4l1.1-1.2A10.2 10.2 0 0 0 8 .8 10.2 10.2 0 0 0 .9 3.6L2 4.8a8.6 8.6 0 0 1 6-2.4Z"/><path d="M8 5.6c1.4 0 2.7.5 3.7 1.4l1.1-1.2A7 7 0 0 0 8 4a7 7 0 0 0-4.8 1.8L4.3 7C5.3 6.1 6.6 5.6 8 5.6Z"/><path d="M8 8.8c.6 0 1.1.2 1.5.6L8 11.2 6.5 9.4c.4-.4.9-.6 1.5-.6Z"/></svg>',
   battery: '<svg viewBox="0 0 27 13" fill="none" aria-hidden="true"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4a2 2 0 0 0 0-4Z" fill="currentColor" opacity=".5"/></svg>',
 };
+
+/* ---- App illustrations (v1.3: illustrations may use warm colours; never food photos) ----
+   Small, flat, two-tone spots for the Today start cards. 64 px grid, drawn in tokens. */
+const spot = (body) => `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">${body}</svg>`;
+ICONS.illoPot = spot(`
+  <path d="M22 13c2-2 2-4 0-6M32 13c2-2 2-4 0-6M42 13c2-2 2-4 0-6" fill="none" stroke="var(--herb-400)" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="32" cy="24" rx="21" ry="5.5" fill="var(--herb-300)"/>
+  <ellipse cx="32" cy="24" rx="17.5" ry="3.8" fill="var(--wheat)"/>
+  <path d="M15.5 23.5c2.5 1.6 6.5 2.6 11 2.9" stroke="var(--jaggery-500)" stroke-width="1.6" fill="none" opacity=".55"/>
+  <path d="M11 24v15c0 7.5 9.4 13 21 13s21-5.5 21-13V24c0 3-9.4 5.5-21 5.5S11 27 11 24Z" fill="var(--herb-200)" stroke="var(--herb-500)" stroke-width="2"/>
+  <path d="M11 33c0 3 9.4 5.6 21 5.6S53 36 53 33" fill="none" stroke="var(--herb-400)" stroke-width="1.6"/>
+  <rect x="4" y="27" width="8" height="4.5" rx="2.25" fill="var(--herb-500)"/><rect x="52" y="27" width="8" height="4.5" rx="2.25" fill="var(--herb-500)"/>`);
+ICONS.illoBasket = spot(`
+  <circle cx="23" cy="25" r="8.5" fill="var(--tomato-500)"/><path d="M20 17.5c1.5 1 4.5 1 6 0" stroke="var(--curryleaf-600)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <path d="M33 31 44 12.5a3.4 3.4 0 0 1 5.8 3.4L39 33Z" fill="#f08a3c"/><path d="m46.5 11.5 3-5M48 13l5-2.5" stroke="var(--curryleaf-600)" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M29 30c-3-6 0-12 6-14 1 5-1 10-6 14Z" fill="var(--curryleaf-600)"/><path d="M29 30c3-5 4-8 5-12" stroke="var(--curryleaf-800)" stroke-width="1.2" fill="none"/>
+  <path d="M7 31h50l-5.5 19a5 5 0 0 1-4.8 3.6H17.3a5 5 0 0 1-4.8-3.6Z" fill="var(--wheat)" stroke="var(--jaggery-500)" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M10 38h44M12 45h40M22 31l2 22.6M32 31v22.6M42 31l-2 22.6" stroke="var(--jaggery-500)" stroke-width="1.6" opacity=".75"/>
+  <rect x="5" y="28" width="54" height="5" rx="2.5" fill="var(--jaggery-500)"/>`);
+
+ICONS.illoPlate = spot(`
+  <ellipse cx="32" cy="38" rx="27" ry="16" fill="var(--herb-300)"/>
+  <ellipse cx="32" cy="35" rx="27" ry="16" fill="var(--white)" stroke="var(--herb-400)" stroke-width="2"/>
+  <ellipse cx="32" cy="35" rx="18" ry="10" fill="none" stroke="var(--herb-200)" stroke-width="2"/>
+  <path d="M22 33c3-4 7-5 10-5s7 1 10 5c-3 3-7 4-10 4s-7-1-10-4Z" fill="var(--wheat)"/>
+  <circle cx="27" cy="32" r="1.6" fill="var(--curryleaf-600)"/><circle cx="35" cy="31" r="1.6" fill="var(--tomato-500)"/><circle cx="31" cy="34" r="1.4" fill="var(--curryleaf-600)"/>
+  <path d="M10 14v12M14 14v12M12 26v8M52 14c-3 0-4 4-4 8s2 4 4 4v8" fill="none" stroke="var(--herb-500)" stroke-width="2" stroke-linecap="round"/>`);
 
 /** Returns the markup for an icon by name. */
 export function icon(name) {

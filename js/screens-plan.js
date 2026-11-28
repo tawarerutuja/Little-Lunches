@@ -5,19 +5,23 @@
 import { icon } from './icons.js';
 import {
   h, button, iconButton, topbar, chip, openSheet, toast, radioGroupKeys, checkRow,
-  segmented, thumb, textField,
+  segmented, thumb, textField, micButton, menuSheet,
 } from './components.js';
 import { navigate, back, currentRoute } from './router.js';
 import { store, childName, avoids } from './store.js';
-import { MEALS, thumbUrl } from './data.js';
+import { MEALS, thumbUrl, INGREDIENTS } from './data.js';
 import {
   todayKey, dateKey, fromKey, addDays, mondayOf, weekKeys, fmtRange, fmtDayNum, dayLetter, dayName,
   weekdayIndex, recipe, fillPlan, planAlternatives, shoppingList, FEEDERS, feederName, rankIdeas,
-  entry, mealNow, capFirst, allergyName,
+  entry, mealNow, capFirst, allergyName, recipeSafe, saveCustomDish, guessNeeds, typedFoodUnsafe, homeToday,
 } from './meals.js';
 import { shell, rise, footerMsg, showMsg, joinNice } from './screens.js';
 
 const refresh = () => navigate(currentRoute(), { replace: true, transition: 'fade' });
+/** Photo, or the neutral plate for a dish she typed (no recipe photo). */
+const dishThumb = (r, cls) => (r.custom
+  ? h('span', { class: `${cls} ${cls}--icon dish-plate`, html: icon('illoPlate'), 'aria-hidden': 'true' })
+  : thumb(r.photo ? thumbUrl(r.photo) : null, cls));
 const MEAL_NAMES = Object.fromEntries(MEALS.map((m) => [m.id, m.name]));
 const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const DAY_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -238,13 +242,13 @@ function mealRow(k, m, day) {
   const bad = r.allergens.filter((a) => avoids(a, s));
   // The dish opens its recipe (a new screen). "Change" is the labelled action that opens
   // the sheet with other ideas: one visible control per job, no hidden tap targets.
-  const open = h('button', { type: 'button', class: 'plan-row__open', 'aria-label': `${MEAL_NAMES[m]}: ${r.name}, ${r.mins} minutes. Open recipe` },
-    thumb(r.photo ? thumbUrl(r.photo) : null, 'plan-row__img'),
+  const open = h('button', { type: 'button', class: 'plan-row__open', 'aria-label': `${MEAL_NAMES[m]}: ${r.name}, ${r.custom ? 'your dish' : r.mins + ' minutes'}. Open recipe` },
+    dishThumb(r, 'plan-row__img'),
     h('span', { class: 'plan-row__text' },
       // The meal is a text label, not a lone icon (the moon read as a button).
       h('span', { class: `tl__meal tl__meal--${m}`, text: MEAL_NAMES[m] }),
       h('span', { class: 'plan-row__name', text: r.name }),
-      h('span', { class: 'plan-row__meta' },
+      r.custom ? h('span', { class: 'plan-row__meta', text: 'Your dish' }) : h('span', { class: 'plan-row__meta' },
         h('span', { class: 'contents', html: icon('clock') }),
         h('span', { text: `${r.mins} min${r.tags.includes('noCook') ? ' · No cooking' : r.tags.includes('sameFamily') ? ' · Same as family' : r.tags.includes('onePot') ? ' · One pot' : day.busy && !r.prep ? ' · No prep' : ''}` }),
         needsPrep && !bad.length ? h('span', { class: 'tag tag--prep', text: r.prepShort }) : null,
@@ -337,8 +341,8 @@ function plannedMealSheet(k, m) {
   let api;
   const d = fromKey(k);
   const now = h('div', { class: 'planned-now' },
-    thumb(r.photo ? thumbUrl(r.photo) : null, 'planned-now__img'),
-    h('div', { class: 'planned-now__text' }, h('p', { class: 'planned-now__name', text: r.name }), h('p', { class: 'row__meta', text: `${r.mins} min${r.prep ? ' · ' + r.prepShort : ''}` })),
+    dishThumb(r, 'planned-now__img'),
+    h('div', { class: 'planned-now__text' }, h('p', { class: 'planned-now__name', text: r.name }), h('p', { class: 'row__meta', text: r.custom ? 'Your dish' : `${r.mins} min${r.prep ? ' · ' + r.prepShort : ''}` })),
     h('button', { type: 'button', class: 'link', text: 'Recipe', onClick: () => { api.close({ keepFocus: true }); openPlannedRecipe(k, m); } }));
   const options = planAlternatives(s, k, m, 3);
   const rows = options.map((o) => h('div', { class: 'row row--compact use-row' },
@@ -365,35 +369,166 @@ function plannedMealSheet(k, m) {
   const alert = bad.length ? h('div', { class: 'alert', role: 'alert' }, h('span', { class: 'contents', html: icon('allergy') }),
     h('div', {}, h('p', { class: 'alert__title', text: `${r.name} has ${joinNice(bad.map((a) => allergyName(a).toLowerCase()))}` }),
       h('p', { class: 'alert__body', text: 'It is on his allergy list now. Pick one of the ideas below.' }))) : null;
+  // Her own dishes (saved before) come first next time; then "Type your own dish".
+  const useDish = (id, name) => {
+    const prev = r.id;
+    store.set((x) => { x.plan.days[k].meals[m] = id; });
+    api.close({ keepFocus: true });
+    store.ui({ flash: `${k}-${m}` });
+    refresh();
+    toast(`${dayName(d)} ${MEAL_NAMES[m].toLowerCase()} is now ${name}`, { iconName: 'success', action: { label: 'Undo', onClick: () => { store.set((x) => { x.plan.days[k].meals[m] = prev; }); refresh(); } } });
+  };
+  const mine = (s.customDishes || []).filter((c) => c.id !== r.id).map((c) => recipe(c.id)).filter((c) => c && recipeSafe(c, s)).slice(0, 3);
+  const mineRows = mine.map((c) => h('div', { class: 'row row--compact use-row' },
+    dishThumb(c, 'use-row__img'),
+    h('span', { class: 'row__label' }, h('span', { class: 't-body-l-strong', text: c.name }), h('span', { class: 'row__meta', text: 'Your dish' })),
+    button({ label: 'Use this', variant: 'secondary', size: 'm', cls: 'btn--auto btn--compact', ariaLabel: `Use ${c.name}`, onClick: () => useDish(c.id, c.name) })));
+  const typeOwn = h('button', { type: 'button', class: 'row row--compact use-row own-dish', 'aria-haspopup': 'dialog' },
+    h('span', { class: 'use-row__img use-row__img--icon own-dish__icon', html: icon('edit'), 'aria-hidden': 'true' }),
+    h('span', { class: 'row__label' }, h('span', { class: 't-body-l-strong', text: 'Type your own dish' }), h('span', { class: 'row__meta', text: 'Anything your family makes' })),
+    h('span', { class: 'nav-row__chev', html: icon('forward') }));
+  typeOwn.addEventListener('click', () => { api.close({ keepFocus: true }); setTimeout(() => ownDishSheet(k, m), 340); });
+
   api = openSheet({
     title: `${dayName(d)} ${MEAL_NAMES[m].toLowerCase()}`,
     sub: day.busy ? `Busy day · ${capFirst(feederName(day.feeder, s))} feeds` : '',
     body: h('div', {}, alert,
       h('h3', { class: 't-label sheet-label sheet-label--first', text: 'Planned now' }), now,
+      mineRows.length ? h('h3', { class: 't-label sheet-label', text: 'Your dishes' }) : null,
+      mineRows.length ? h('div', { class: 'use-list' }, mineRows) : null,
       h('h3', { class: 't-label sheet-label', text: day.busy ? 'Or pick one · quick for a busy day' : 'Or pick one · quick and easy' }),
       rows.length ? h('div', { class: 'use-list' }, rows) : h('p', { class: 'row__meta', text: 'No other ideas fit this meal yet.' }),
+      h('div', { class: 'use-list own-dish-wrap' }, typeOwn),
       remove),
   });
+}
+
+/* ---------- Type your own dish: name → "Need anything for this?" → plan + shopping ---------- */
+function ownDishSheet(k, m) {
+  let api;
+  const d = fromKey(k);
+  const field = textField({ placeholder: 'e.g. Aloo paratha', onEnter: () => next() });
+  field.input.setAttribute('aria-label', 'Name of your dish');
+  field.control.append(micButton({ input: field.input, sample: 'Aloo paratha' }));
+  const err = h('p', { class: 'msg msg--error', 'aria-live': 'polite' });
+  const body = h('div', { class: 'own-dish' }, field, err);
+  const foot = h('div', { class: 'own-dish__foot' });
+
+  function next() {
+    const name = capFirst(field.input.value.trim());
+    if (name.length < 2) { showMsg(err, 'Please type the dish name.'); return; }
+    // Safety: a dish that names his allergen is not added.
+    const bad = typedFoodUnsafe(name);
+    if (bad.length) { showMsg(err, `${capFirst(bad[0].phrase)} isn’t safe for ${childName() || 'him'}. It is on his allergy list.`); return; }
+    askNeeds(name);
+  }
+
+  function askNeeds(name) {
+    const s = store.get();
+    const have = new Set(homeToday(s));
+    const picked = new Set();
+    const extra = [];
+    const guess = guessNeeds(name).filter((id) => !(INGREDIENTS.find((i) => i.id === id)?.allergens || []).some((a) => avoids(a, s)));
+    const chips = h('div', { class: 'chips', role: 'group', 'aria-label': 'Things to buy for this' });
+    const paint = () => chips.replaceChildren(
+      ...guess.map((id) => chip({ label: INGREDIENTS.find((i) => i.id === id).name + (have.has(id) ? ' · at home' : ''), checked: picked.has(id),
+        onToggle: (on, c) => { on ? picked.add(id) : picked.delete(id); c.setChecked(on); } })),
+      ...extra.map((x) => chip({ label: x, checked: true, onToggle: (on, c) => { if (!on) { extra.splice(extra.indexOf(x), 1); paint(); } else c.setChecked(true); } })));
+    paint();
+    const add = textField({ placeholder: 'Add item, e.g. ghee', onEnter: () => addItem() });
+    add.input.setAttribute('aria-label', 'Add an item to buy');
+    function addItem() {
+      const t = capFirst(add.input.value.trim());
+      if (t.length < 2) return;
+      const ing = INGREDIENTS.find((i) => i.name.toLowerCase() === t.toLowerCase() || (i.words || []).includes(t.toLowerCase()));
+      if (ing) { if (!guess.includes(ing.id)) guess.push(ing.id); picked.add(ing.id); } else if (!extra.includes(t)) extra.push(t);
+      add.input.value = ''; paint();
+    }
+    const addBtn = button({ label: 'Add', variant: 'secondary', size: 'm', cls: 'btn--auto', onClick: addItem });
+    body.replaceChildren(
+      h('p', { class: 'own-dish__name t-title-s', text: name }),
+      h('h3', { class: 't-label sheet-label', text: 'Need anything for this?' }),
+      guess.length ? chips : h('p', { class: 't-help', text: 'Add anything you need to buy. We put it on the shopping list.' }),
+      h('div', { class: 'add-row block-gap' }, add, addBtn));
+    if (!guess.length) body.insertBefore(chips, body.lastChild);
+    foot.replaceChildren(button({ label: `Add to ${dayName(d)}`, onClick: () => {
+      let id;
+      store.set((x) => {
+        id = saveCustomDish(x, { name, needs: [...picked], extra });
+        x.plan.days[k].meals[m] = id;
+        // Ticked items she doesn't have go to the shopping list (via the plan); free-text items as manual items.
+        extra.forEach((t) => { if (!x.shopping.manual.some((i) => i.name.toLowerCase() === t.toLowerCase())) x.shopping.manual.push({ id: `m-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`, name: t, qty: '', for: `for ${d.toLocaleDateString('en-IN', { weekday: 'short' })} ${name.toLowerCase()}` }); });
+        [...picked].forEach((p) => { x.shopping.got = x.shopping.got.filter((g) => g !== p); });
+      });
+      api.close();
+      store.ui({ flash: `${k}-${m}` });
+      refresh();
+      const toBuy = [...picked].filter((p) => !have.has(p)).length + extra.length;
+      toast(toBuy ? `${name} added. ${toBuy} thing${toBuy === 1 ? '' : 's'} on your shopping list.` : `${name} added to ${dayName(d)}.`, { iconName: 'success' });
+    } }));
+  }
+
+  foot.append(button({ label: 'Save', onClick: () => next() }));
+  api = openSheet({ title: 'Type your own dish', sub: `For ${dayName(d)} ${MEAL_NAMES[m].toLowerCase()}`, body, foot, initialFocus: 'input' });
 }
 
 /* ==========================================================================
    PL05 · Shopping list
    ========================================================================== */
+/**
+ * One item. Tick = bought. "Have it" (visible, secondary) = already at home, fix it right here.
+ * The "for Wed palak khichdi" line is a button: it offers "Swap that dish" instead of buying.
+ */
+function shopRow(it) {
+  const check = h('button', { type: 'button', class: 'check-row shop-row__check', role: 'checkbox', 'aria-checked': 'false', 'aria-label': `${it.name}${it.qty ? ', ' + it.qty : ''}. Bought` },
+    h('span', { class: 'checkbox', 'aria-hidden': 'true', html: icon('check') }),
+    h('span', { class: 'row__label', text: it.name }),
+    it.qty ? h('span', { class: 'shop-row__qty', text: it.qty }) : null);
+  check.addEventListener('click', () => {
+    check.setAttribute('aria-checked', 'true');
+    check.classList.add('is-leaving');
+    setTimeout(() => { store.set((d) => { d.shopping.got = [...new Set([...d.shopping.got, it.id])]; }); refresh(); }, 260);
+  });
+  const isIng = INGREDIENTS.some((i) => i.id === it.id);
+  const forLine = it.forKey
+    ? h('button', { type: 'button', class: 'shop-row__for shop-row__for--btn', 'aria-haspopup': 'dialog', 'aria-label': `${capFirst(it.forText)}. Swap that dish`,
+      onClick: () => menuSheet({ title: `${it.name} is ${it.forText}`, items: [{ icon: 'swap', label: 'Swap that dish', onClick: () => plannedMealSheet(it.forKey, it.forMeal) }] }) },
+      capFirst(it.forText))
+    : it.forText ? h('span', { class: 'shop-row__for', text: capFirst(it.forText) }) : null;
+  const have = button({ label: 'Have it', variant: 'secondary', size: 'm', cls: 'btn--auto btn--compact shop-row__have', ariaLabel: `Have ${it.name} at home already`, onClick: () => haveIt(it, isIng) });
+  return h('div', { class: 'shop-row' },
+    h('div', { class: 'shop-row__main' }, check,
+      (forLine || it.buyLater) ? h('div', { class: 'shop-row__sub' }, forLine,
+        it.buyLater ? h('span', { class: 'tag tag--guide', text: `Buy closer to ${it.buyLater}` }) : null) : null),
+    have);
+}
+
+/** She already has it: off the list, and onto today's "What's at home". */
+function haveIt(it, isIng) {
+  const before = structuredClone({ home: store.get().home, manual: store.get().shopping.manual, ranOut: store.get().shopping.ranOut });
+  store.set((d) => {
+    if (isIng) {
+      const base = homeToday(d);
+      d.home.today = [...new Set([...base, it.id])];
+      d.home.todayDate = todayKey();
+      d.home.lastToday = d.home.today;
+      if (!d.home.usual.includes(it.id)) d.home.usual.push(it.id);
+      d.shopping.ranOut = d.shopping.ranOut.filter((x) => x !== it.id);
+    }
+    d.shopping.manual = d.shopping.manual.filter((x) => x.id !== it.id);
+  });
+  refresh();
+  toast(`${it.name} is at home. Off the list.`, { iconName: 'success', action: { label: 'Undo', onClick: () => {
+    store.set((d) => { d.home = before.home; d.shopping.manual = before.manual; d.shopping.ranOut = before.ranOut; }); refresh();
+  } } });
+}
+
 export function shoppingScreen() {
   const s = store.get();
   const list = shoppingList(s);
   const groups = list.groups.map((g) => h('section', { 'aria-label': g.title },
     h('h2', { class: 't-label section-gap', text: g.title }),
-    h('div', { class: 'card check-list' }, g.items.map((it) => checkRow({
-      label: it.name, meta: it.qty,
-      onChange: (on, row) => {
-        row.classList.add('is-leaving');
-        setTimeout(() => {
-          store.set((d) => { d.shopping.got = on ? [...new Set([...d.shopping.got, it.id])] : d.shopping.got.filter((x) => x !== it.id); });
-          refresh();
-        }, 260);
-      },
-    })))));
+    h('div', { class: 'card check-list' }, g.items.map((it) => shopRow(it)))));
   const done = list.done.length ? h('section', { 'aria-label': 'Got it' },
     h('h2', { class: 't-label section-gap', text: 'Got it' }),
     h('div', { class: 'card check-list check-list--done' }, list.done.map((it) => checkRow({
@@ -432,7 +567,8 @@ export function shoppingScreen() {
   const share = button({
     label: 'Share on WhatsApp', iconName: 'share',
     onClick: async () => {
-      const text = `Shopping list for ${childName() || 'our'} meals:\n` + list.groups.map((g) => `${g.title}\n` + g.items.map((i) => `• ${i.name}${i.qty ? ' (' + i.qty + ')' : ''}`).join('\n')).join('\n');
+      // Every group, including Ran out, Snacks and Added by you.
+      const text = `Shopping list for ${childName() ? childName() + '’s' : 'our'} meals:\n` + list.groups.map((g) => `\n*${g.title}*\n` + g.items.map((i) => `• ${i.name}${i.qty ? ' (' + i.qty + ')' : ''}${i.buyLater ? ` · buy closer to ${i.buyLater}` : ''}`).join('\n')).join('\n');
       if (navigator.share) {
         try { await navigator.share({ text }); return; } catch (err) { if (err && err.name === 'AbortError') return; }
       }

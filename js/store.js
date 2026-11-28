@@ -55,10 +55,16 @@ function initialState() {
     history: {},          // { 'YYYY-MM-DD': { breakfast: { food, name, outcome, by, time, note, recipe } } }
     served: null,         // { date, meal, recipe, name, time } awaiting "How did he eat?"
     foodStatus: {},       // { foodId: 'well' | 'some' | 'not' }
-    plan: { setup: null, days: {}, prepDone: {} }, // days: { 'YYYY-MM-DD': { busy, feeder, meals: { dinner: recipeId|null } } }
-    home: { usual: [...DEFAULT_USUAL], today: null, note: '', meal: null, time: 20 },
+    plan: { setup: null, days: {}, prepDone: {}, prepItems: {} }, // prepItems: { 'YYYY-MM-DD|meal': true } (v1.3, per step) // days: { 'YYYY-MM-DD': { busy, feeder, meals: { dinner: recipeId|null } } }
+    // usual = the chips shown; nothing is pre-ticked (2 of 3 parents unticked pre-ticked items by mistake).
+    home: { usual: [...DEFAULT_USUAL], today: null, todayDate: null, lastToday: null, note: '', meal: null, time: 20 },
     shopping: { manual: [], ranOut: [], got: [] },
-    carers: [],           // [{ id, name, relation, status: 'joined' | 'pending', lang }]
+    snackStock: [],
+    customDishes: [],     // [{ id: 'c-…', name, needs: [ingredientId], extra: [text], notes, made }] (dishes she typed in Plan)
+    learnCommunityInterest: false,       // "Ask other parents": tell me when it's ready
+    carers: [],           // [{ id, name, relation, status: 'joined' | 'pending', lang, voiceNote? }]
+    carerNotes: {},       // { 'YYYY-MM-DD|meal': [{ by, text, voice (data URL), secs, time }] } from the helper, shown in Memory
+    carerSeen: {},        // { carerId: { welcome: true, micHint: true } } first-time spoken welcome and mic hint
     insight: null,        // { text, answered }
     dismissed: {},        // { 'refusal-YYYY-MM-DD': true }
     reminders: [],        // [{ id, kind, at, meal }]
@@ -71,7 +77,15 @@ function load() {
   try {
     const raw = storage.get(KEY);
     if (!raw) return initialState();
-    return { ...initialState(), ...JSON.parse(raw) };
+    // Old saved data keeps working: new top-level keys and new nested keys
+    // (plan.prepItems, home.lastToday, …) fall back to their defaults.
+    const init = initialState();
+    const saved = JSON.parse(raw);
+    const out = { ...init, ...saved };
+    ['plan', 'home', 'shopping', 'backup', 'foods'].forEach((k) => {
+      if (init[k] && typeof init[k] === 'object' && !Array.isArray(init[k])) out[k] = { ...init[k], ...(saved[k] || {}) };
+    });
+    return out;
   } catch {
     return initialState();
   }

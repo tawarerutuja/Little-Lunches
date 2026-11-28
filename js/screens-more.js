@@ -9,7 +9,7 @@ import {
 import { navigate, back, currentRoute } from './router.js';
 import { store, childName, ageInMonths, ageLabel, findFood, unsafeAllergens, slug, backupIds, setBackups } from './store.js';
 import {
-  FOODS, ARTICLES, ARTICLE_SOURCE, RELATIONS, HOUSE_RULES, CUISINES, DIETS, MONTHS, thumbUrl,
+  FOODS, ARTICLES, SOURCE_TODO, RELATIONS, HOUSE_RULES, CUISINES, DIETS, MONTHS, thumbUrl,
 } from './data.js';
 import {
   todayKey, fromKey, addDays, mondayOf, weekKeys, fmtRange, fmtLong, dayLetter, dayName, relDay,
@@ -125,8 +125,33 @@ export function memoryScreen() {
 function daySheet(k) {
   const s = store.get();
   if (k > todayKey()) { toast('That day has not come yet.', { iconName: 'info' }); return; }
-  const rows = ['breakfast', 'lunch', 'snack', 'dinner'].map((m) => timelineRow(s, k, m));
+  const rows = ['breakfast', 'lunch', 'snack', 'dinner'].flatMap((m) => [timelineRow(s, k, m), helperNotes(s, k, m)]).filter(Boolean);
   openSheet({ title: fmtLong(fromKey(k)), body: h('div', { class: 'timeline timeline--sheet' }, rows) });
+}
+
+/** What the helper said for this meal: her words (typed or spoken) and her voice note with a play button. */
+function helperNotes(s, k, m) {
+  const notes = (s.carerNotes || {})[`${k}|${m}`] || [];
+  if (!notes.length) return null;
+  return h('div', { class: 'helper-notes' }, notes.map((n) => {
+    let audio = null;
+    const playBtn = n.voice ? h('button', { type: 'button', class: 'voice-play', 'aria-pressed': 'false', 'aria-label': `Play ${n.by}’s voice note, ${n.secs || 0} seconds` },
+      h('span', { class: 'contents voice-play__icon', html: icon('play') }), h('span', { text: `Voice note · 0:${String(n.secs || 0).padStart(2, '0')}` })) : null;
+    playBtn?.addEventListener('click', () => {
+      const ico = playBtn.querySelector('.voice-play__icon');
+      const reset = () => { playBtn.setAttribute('aria-pressed', 'false'); ico.innerHTML = icon('play'); };
+      if (audio && !audio.paused) { audio.pause(); reset(); return; }
+      audio = audio || new Audio(n.voice);
+      audio.onended = reset;
+      audio.play().then(() => { playBtn.setAttribute('aria-pressed', 'true'); ico.innerHTML = icon('pause'); }).catch(() => { reset(); toast('Could not play this voice note.', { iconName: 'info' }); });
+    });
+    return h('div', { class: 'helper-note' },
+      h('span', { class: 'helper-note__icon contents', html: icon(n.voice ? 'mic' : 'message') }),
+      h('div', { class: 'helper-note__body' },
+        h('p', { class: 'row__meta', text: `${n.by}${n.time ? ', ' + n.time : ''}` }),
+        n.text ? h('p', { class: 'helper-note__text', text: `“${n.text}”` }) : null,
+        playBtn));
+  }));
 }
 
 /* ==========================================================================
@@ -279,6 +304,14 @@ export function learnScreen() {
 
   const questions = ARTICLES.filter((a) => !a.short && !a.featured).map((a) => navRow({ title: a.title, onClick: () => open(a.id) }));
 
+  // Ask other parents: not built yet. Clearly marked "Coming soon" so nobody thinks it is broken.
+  const community = navRow({
+    title: 'Ask other parents', sub: 'Questions from parents with kids his age', media: iconTile('people'),
+    trail: null, cls: 'community-row', onClick: () => communitySheet(),
+  });
+  community.querySelector('.row__label').append(h('span', { class: 'tag tag--wip community-row__tag', text: 'Coming soon' }));
+  community.setAttribute('aria-haspopup', 'dialog');
+
   const { el } = shell({
     cls: 'learn',
     label: 'Learn',
@@ -287,10 +320,35 @@ export function learnScreen() {
       hero,
       h('section', { 'aria-labelledby': 'gtk' }, h('h2', { class: 't-label section-gap', id: 'gtk', text: 'Good to know at his age' }), h('div', { class: 'mini-row' }, minis)),
       h('section', { 'aria-labelledby': 'cq' }, h('h2', { class: 't-label section-gap', id: 'cq', text: 'Common questions' }), h('div', { class: 'card nav-list' }, questions)),
+      h('div', { class: 'card nav-list block-gap' }, community),
     ]),
     tabs: 'learn',
   });
   return { el, onLeave: el.cleanup };
+}
+
+/** "Coming soon" sheet for Ask other parents. One tap to hear when it is ready. */
+function communitySheet() {
+  let api;
+  const asked = store.get().learnCommunityInterest;
+  const btn = button({
+    label: asked ? 'We’ll let you know' : 'Tell me when it’s ready', variant: asked ? 'secondary' : 'primary',
+    onClick: () => {
+      if (store.get().learnCommunityInterest) { api.close(); return; }
+      store.set({ learnCommunityInterest: true });
+      api.close();
+      toast('We’ll let you know', { iconName: 'success' });
+    },
+  });
+  api = openSheet({
+    title: 'Ask other parents',
+    label: 'Ask other parents, coming soon',
+    body: h('div', { class: 'soon' },
+      h('div', { class: 'soon__art' }, phulkaEl({ mood: 'calm', size: 96, disc: true })),
+      h('h3', { class: 't-title-m soon__title', text: 'Coming soon' }),
+      h('p', { class: 'soon__body', text: 'Soon you can ask other parents and read their answers here.' })),
+    foot: btn,
+  });
 }
 
 export function articleScreen() {
@@ -307,7 +365,13 @@ export function articleScreen() {
       h('h2', { class: 't-label section-gap', text: 'What you can try' }),
       h('ul', { class: 'tips' }, a.tips.map((t) => h('li', { class: 'tip' }, h('span', { class: 'tip__mark', html: icon('check') }), h('span', { text: t })))),
       h('p', { class: 'note note--info block-gap' }, h('span', { class: 'contents', html: icon('info') }), h('span', { text: a.doctor })),
-      h('p', { class: 'source' }, 'Source: ', h('a', { href: ARTICLE_SOURCE.url, target: '_blank', rel: 'noopener noreferrer', class: 'source__link', text: ARTICLE_SOURCE.name }), h('span', { class: 'sr-only', text: ' (opens in a new tab)' })),
+      // "Based on:" from the article's own sources. No source yet = a visible placeholder, never a guess.
+      h('p', { class: 'source' }, 'Based on: ',
+        ...(a.sources?.length
+          ? a.sources.flatMap((src, i) => [i ? ', ' : '', src.url
+            ? h('a', { href: src.url, target: '_blank', rel: 'noopener noreferrer', class: 'source__link', text: src.name, 'aria-label': `${src.name} (opens in a new tab)` })
+            : src.name])
+          : [h('span', { class: 'source__todo', text: SOURCE_TODO })])),
     ],
   });
   return { el, onLeave: el.cleanup };
@@ -351,6 +415,7 @@ export function profileScreen() {
 
   const group2 = h('div', { class: 'card nav-list' },
     navRow({ title: 'Language', sub: 'English', media: iconTile('language', 'neutral'), onClick: () => languageSheet() }),
+    navRow({ title: 'Appearance', sub: THEMES.find((x) => x.id === (s.theme || 'system')).name, media: iconTile('moon', 'neutral'), onClick: () => appearanceSheet(), cls: 'appearance-row' }),
     navRow({ title: 'Help', sub: 'Common questions and chat', media: iconTile('help', 'neutral'), onClick: () => navigate('help') }),
     navRow({ title: 'Add another child', media: iconTile('plus', 'leaf'), cls: 'nav-row--link', onClick: () => comingSoon('Adding another child') }));
 
@@ -396,6 +461,34 @@ export function helpScreen() {
   return { el, onLeave: el.cleanup };
 }
 
+/* ---------- Appearance: same as phone (default), light or dark ---------- */
+const THEMES = [
+  { id: 'system', name: 'Same as phone', sub: 'Changes when your phone does', icon: 'phone' },
+  { id: 'light', name: 'Light', icon: 'today' },
+  { id: 'dark', name: 'Dark', icon: 'moon' },
+];
+function appearanceSheet() {
+  let api;
+  const current = store.get().theme || 'system';
+  const group = h('div', { class: 'nav-list', role: 'radiogroup', 'aria-label': 'Appearance' }, THEMES.map((t) => {
+    const b = h('button', { type: 'button', class: 'row nav-row', role: 'radio', 'aria-checked': String(t.id === current) },
+      iconTile(t.icon, 'neutral'),
+      h('span', { class: 'row__label' }, h('span', { class: 'nav-row__title', text: t.name }), t.sub ? h('span', { class: 'row__meta nav-row__sub', text: t.sub }) : null),
+      h('span', { class: 'radio-mark', html: icon('check'), 'aria-hidden': 'true' }));
+    b.addEventListener('click', () => {
+      // Applies at once (app.js listens for theme changes) and is remembered.
+      store.set({ theme: t.id === 'system' ? null : t.id });
+      group.querySelectorAll('[role="radio"]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+      const row = document.querySelector('.appearance-row .nav-row__sub');
+      if (row) row.textContent = t.name;
+      setTimeout(() => api.close(), 180);
+    });
+    return b;
+  }));
+  radioGroupKeys(group);
+  api = openSheet({ title: 'Appearance', body: group, initialFocus: '[aria-checked="true"]' });
+}
+
 function languageSheet() {
   openSheet({
     title: 'Language',
@@ -439,7 +532,9 @@ export function peopleScreen() {
     }) });
     return h('div', { class: 'person' },
       h('span', { class: `avatar avatar--${c.status === 'joined' ? 'wheat' : 'leaf'}`, text: c.name.charAt(0).toUpperCase(), 'aria-hidden': 'true' }),
-      h('div', { class: 'person__text' }, h('p', { class: 'person__name', text: c.name }), h('p', { class: 'row__meta', text: c.relation }), status),
+      h('div', { class: 'person__text' }, h('p', { class: 'person__name', text: c.name }), h('p', { class: 'row__meta', text: c.relation }), status,
+        // Shown to the parent, never to the helper (e.g. "This phone has no Nepali voice. Playing Hindi.").
+        c.voiceNote ? h('p', { class: 'person__voice', text: c.voiceNote }) : null),
       more);
   });
   const pending = s.carers.filter((c) => c.status === 'pending');
