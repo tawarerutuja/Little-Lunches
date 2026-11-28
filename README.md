@@ -159,11 +159,50 @@ These show a toast or a “coming soon” label:
 index.html  404.html  .nojekyll  favicon.svg  README.md
 css/  reset · variables (tokens) · base (frame) · components · screens · animations
 js/   icons · phulka · data · store · meals (logic) · components · router · app
+      voice (speech out for the helper view)
       screens (R1) · screens-today (R2, R3, R7) · screens-plan (R5)
       screens-more (R6, R4 invite) · screens-carer (R4 carer view)
 assets/photos/        720 px JPGs (hero 1080 px)
 assets/photos/thumb/  192 px square crops
 ```
+
+## What changed after usability testing (3 mothers)
+
+We kept what tested well: onboarding, Memory, the invite flow and the minimal feel.
+
+**Design system v1.3** (`css/variables.css`, `css/components.css`)
+- Message roles `--msg-neutral / guide / attention / danger / info / notice-*`. Jaggery is now only for **Attention**, the *Ate some* mark, Phulka and illustrations.
+- New meal colours (haldi, methi, chikoo rose, jamun) and `--herb-650` for meta text.
+- Type roles `.t-section-title` (with a 32 px icon tile), `.t-help`, `.t-meta`. Section spacing is 40 px between sections, 4 px title to help and 16 px help to content (24 px from the screen title to the first section).
+- Components: `sectionHead()`, `reminder()`, `reminderDone()`, `notice()`, `attention()`, `alertMsg()`, `infoMsg()`.
+- Three tag kinds: **Meal**, **Status** (`.tag--status`) and **Guide** (`.tag--guide`). At most one coloured tag per card.
+- **`listenButton({ lang, label, stopLabel, getLines, onFallback })`**: a speaker and the word in her language, 56 px. It reads `getLines()` (`[{ text, el }]`) aloud with `speechSynthesis` at 0.9 speed, shows *Stop* while speaking and highlights the line being read (`.is-reading`).
+- **`micButton({ …, size: 'xl', lang, onState, onBlocked })`**: the big 72 px helper mic. `lang` sets `rec.lang` (`hi-IN`, `en-IN`, `ne-NP`, `mr-IN`). The small in-field mic is unchanged.
+
+**Prep: show one, see all.** Today shows one Reminder (“Get ready for tomorrow”, dish · step, “5 min · 1 of 3”, a *Needs tonight* Guide tag, a tick with Undo). *See all prep* opens a Today / Tomorrow sheet with *Mark all done*. After 9 pm an undone must-do becomes Attention with *Swap breakfast*. Use *It’s after 9 pm* in the prototype panel to see it.
+
+**Planned meals on Today.** The photo card is back (photo, tags, name, “15 min · 6 ingredients · All at home”, the toddler tip, *Make this*), without Swap and Ask: *None of these* and the other ideas already cover them. *What the family eats* comes right after.
+
+**Snacks.** Snacks are no longer full meals. Ready snacks (fruit, makhana, murmura, rice cakes) and homemade jars (dry fruit ladoo, roasted makhana, ragi ladoo) come first at snack time. Nuts are only ever ground inside something, never whole. *Snacks at home* (Plenty / Running low / Finished) lives on What’s at home; logging a jar snack uses one serving; low jars become a prep step; finished packets go to the shopping list.
+
+**Your own dish.** In Plan → Change, *Type your own dish* → name → *Need anything for this?* (chips guessed from the name, plus *Add item*). It is saved as a custom dish: in the plan, on Today with the plate drawing, in a simple screen with notes, and in Memory. Saved dishes appear first under *Your dishes*. A dish that names his allergen is not added.
+
+**What’s at home and shopping.** Nothing is pre-ticked; *Use last time’s list* appears once there is one. Every shopping item says what it is for (“For Wed palak khichdi”, tap it to swap that dish), has a *Have it* button (moves it to What’s at home), and perishables needed 3+ days ahead get *Buy closer to Thu*. A *Snacks* group; WhatsApp includes every group.
+
+**Learn.** Each article ends with *Based on:* from its `sources` field, or *Source to be added*. *Ask other parents* is a clearly marked *Coming soon* card; *Tell me when it’s ready* saves `learnCommunityInterest`.
+
+**Helper view, voice first.** For a helper who can’t read:
+- *सुनें / Listen* at the top reads what to give, allergies, house rules, today’s and tomorrow’s prep, and what the three faces mean. The first visit plays a short spoken welcome once.
+- Nepali is in the language list. If the phone has no voice for her language it plays Hindi, and the **parent** sees “This phone has no Nepali voice. Playing Hindi.” on *People who feed him*. Nepali screen text is Hindi until it is translated.
+- The faces say their label when pressed.
+- *Anything to tell Deepali?*: a big mic first (pulsing ring and a finger the first time, plus the spoken hint; no pulse with reduced motion), *Listening…* with a sound bar, a spoken read-back and one big tick. Or *Send a voice note* (up to 30 s, `MediaRecorder`), which the parent plays in Memory → the day. Typing is the last option.
+- If the mic is blocked, it says so aloud and points at the big face buttons.
+- Prep shows as Reminders in her language (`AHEAD_HI`).
+- Setup: the cuisine tile *Mixed or other* is now *Something else* (“Type your family’s food”). Saved `'mixed'` still works.
+
+**Appearance in Profile.** Profile → *Appearance*: *Same as phone* (default), *Light* or *Dark*. It applies at once, is remembered, and stays in sync with the prototype panel’s theme button. This is the way to switch theme on a phone, where the prototype panel is hidden.
+
+**Memory week grid.** The day letters now sit exactly above their column of faces.
 
 ### Round 15 · Back to the finalised T01 screen
 - Today’s decision card is rebuilt to match Figma T01 exactly, in curry-leaf colours. The hero photo card with separate Swap and Ask buttons is gone: the ready-idea rows and *None of these?* (which leads to Ask) already cover them.
