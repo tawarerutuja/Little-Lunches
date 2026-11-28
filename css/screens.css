@@ -133,10 +133,6 @@
 .ask-card__text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ask-card__title { font-weight: var(--fw-semibold); font-size: var(--fs-body-m); line-height: var(--lh-body-m); }
 
-.prep-card { padding: var(--space-12) var(--space-16) var(--space-16); border-radius: var(--radius-card); background: var(--note-bg); box-shadow: inset 0 0 0 1px var(--note-border); }
-.prep-card__eyebrow { display: flex; align-items: center; gap: var(--space-8); color: var(--warning-fg); font-size: var(--fs-label); font-weight: var(--fw-semibold); letter-spacing: var(--ls-label); text-transform: uppercase; }
-.prep-card__eyebrow svg { width: 16px; height: 16px; }
-
 .start-card {
   display: flex; align-items: center; gap: var(--space-16); width: 100%; min-height: 96px;
   padding: var(--space-12) var(--space-16) var(--space-12) var(--space-12);
@@ -199,10 +195,6 @@
 .tl__add { font-weight: var(--fw-semibold); font-size: var(--fs-body-l); line-height: 24px; color: var(--text-link); }
 .timeline--sheet .tl { padding-left: 0; padding-right: 0; }
 
-.notice { padding: var(--space-16); border-radius: var(--radius-card); background: var(--meal-dinner-bg); }
-.notice__top { display: flex; gap: var(--space-12); align-items: flex-start; }
-.notice__body { margin-top: var(--space-4); font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-primary); }
-.notice__actions { display: flex; align-items: center; gap: var(--space-8); margin-top: var(--space-12); padding-left: 76px; }
 
 /* ---------- Family dinner → his plate ---------- */
 .plate { margin-top: var(--space-16); }
@@ -303,10 +295,10 @@
 .week { padding: var(--space-16); }
 .week-grid { margin-top: var(--space-12); display: flex; flex-direction: column; gap: var(--space-4); }
 .week-grid__row { display: grid; grid-template-columns: 44px repeat(7, 1fr); align-items: center; }
-.week-grid__day { min-height: 36px; font-size: var(--fs-caption); font-weight: var(--fw-semibold); color: var(--text-secondary); border-radius: var(--radius-sm); }
+.week-grid__day { display: grid; place-items: center; width: 100%; min-height: 36px; text-align: center; font-size: var(--fs-caption); font-weight: var(--fw-semibold); color: var(--text-secondary); border-radius: var(--radius-sm); }
 .week-grid__day.is-today { color: var(--brand-primary); text-decoration: underline; text-underline-offset: 3px; }
 .week-grid__meal { display: grid; }
-.mark { display: grid; place-items: center; min-height: 40px; border-radius: var(--radius-sm); }
+.mark { display: grid; place-items: center; width: 100%; min-height: 40px; border-radius: var(--radius-sm); }
 .mark:active { background: var(--bg-sunken); }
 .mark__none { display: block; width: 22px; height: 22px; border-radius: var(--radius-full); border: 1.5px dashed var(--outcome-none); }
 .mark__none--s { width: 16px; height: 16px; }
@@ -495,7 +487,7 @@
 /* Start-from rows: final look (overrides the earlier tinted-card version) */
 
 /* DS · Tag: "Best fit" is the green tag */
-.tag--best { background: var(--success-bg); color: var(--success-fg); }
+.tag--best { background: var(--msg-guide-bg); color: var(--msg-guide-fg); }
 
 /* Decide is a section now, not a card: align to the 20 px screen margin */
 
@@ -549,14 +541,7 @@
 /* Round 8 · Today's planned meal: Make this · [Swap] [Ask] · More ways to decide */
 
 /* Round 9 · Tonight's head start: one small step per planned meal for tomorrow */
-.prep-card__list { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-12); }
-.prep-item { display: flex; flex-direction: column; gap: 2px; }
-.prep-item + .prep-item { padding-top: var(--space-12); border-top: 1px solid var(--note-border); }
-.prep-item__head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--space-8); }
-.prep-item__head .tl__meal { font-size: var(--fs-label); line-height: 16px; letter-spacing: var(--ls-label); text-transform: uppercase; font-weight: var(--fw-semibold); }
-.prep-item__dish { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-secondary); }
-.prep-item__text { font-weight: var(--fw-semibold); font-size: var(--fs-body-l); line-height: 24px; color: var(--text-primary); }
-.prep-card__foot { display: flex; justify-content: flex-end; margin-top: var(--space-12); }
+
 .carer-note__more { display: block; margin-top: 2px; font-weight: var(--fw-regular); }
 
 /* Round 11 · Milk follow-up: milk means milk only; curd, paneer, ghee are asked */
@@ -570,7 +555,6 @@
 /* Round 13 · One connected decision card: idea (Make this · Swap · Ask), then in the same
    card: or start from (family / at home) · or pick another idea · none of these */
 
-
 /* Round 15 · T01 decision card (Figma v3 · R2 "Today: deciding dinner"), curry-leaf theme */
 .decide-card { padding: var(--space-16) var(--space-16) var(--space-8); }
 .decide-card__title { margin-top: var(--space-4); font-family: var(--font-title); font-weight: var(--fw-semibold); font-size: var(--fs-title-m); line-height: var(--lh-title-m); color: var(--text-primary); }
@@ -581,7 +565,7 @@
 .decide-card .start-card--home { background: var(--start-home-bg); }
 .decide-card .start-card__art { display: grid; place-items: center; width: 64px; height: 64px; flex: none; border-radius: var(--radius-md); background: var(--bg-surface); box-shadow: 0 1px 2px rgba(28, 42, 32, 0.06); }
 .decide-card .start-card__art svg { width: 32px; height: 32px; }
-.decide-card .start-card--family .start-card__art { color: var(--jaggery-700); }
+
 .decide-card .start-card--home .start-card__art { color: var(--curryleaf-700); }
 .decide-card .start-card__title { font-family: var(--font-title); font-weight: var(--fw-semibold); font-size: var(--fs-title-s); line-height: var(--lh-title-s); color: var(--text-primary); }
 .decide-card .start-card__sub { margin-top: 2px; font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
@@ -595,7 +579,7 @@
 .decide-card__none svg { width: 18px; height: 18px; }
 .decide-card__empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); margin: var(--space-20) 0 var(--space-8); }
 .decide-card__empty-title { font-weight: var(--fw-semibold); font-size: var(--fs-body-l); }
-.tag--plan { background: var(--curryleaf-50); color: var(--curryleaf-700); }
+.tag--plan { background: var(--bg-sunken); color: var(--text-secondary); }  /* v1.3 Status */
 /* Fit "The family's dinner" on one line at 402 px (Figma T01) */
 .decide-card .start-card { gap: var(--space-12); padding: var(--space-12) var(--space-12) var(--space-12) var(--space-12); }
 .decide-card .start-card__art { width: 56px; height: 56px; }
@@ -605,6 +589,143 @@
 .legend { display: grid !important; grid-template-columns: 1fr 1fr; gap: var(--space-8) var(--space-16); }
 .legend li { display: flex; align-items: center; gap: var(--space-8); }
 /* One prep item: "Done" sits on the same line as the task (Figma T01), not on its own row */
-.prep-card--single { display: grid; grid-template-columns: 1fr auto; column-gap: var(--space-12); align-items: end; }
-.prep-card--single .prep-card__eyebrow { grid-column: 1 / -1; }
-.prep-card--single .prep-card__foot { margin-top: 0; align-self: center; }
+
+/* v1.3 · Start cards: neutral surface, illustrated tile (warmth lives in the illustration) */
+.decide-card .start-card__art--illo { background: var(--bg-surface); }
+.decide-card .start-card__art--illo svg { width: 44px; height: 44px; }
+.decide-card .start-card { box-shadow: inset 0 0 0 1px var(--border-subtle); }
+
+/* v1.3 · Prep sheet: TODAY / TOMORROW groups, one row per step, 44 px ticks */
+.prep-group + .prep-group { margin-top: var(--space-24); }
+.prep-group__label { margin-bottom: var(--space-4); }
+.prep-list { display: flex; flex-direction: column; }
+.prep-row { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) 0; }
+.prep-row + .prep-row { border-top: 1px solid var(--border-subtle); }
+.prep-row__main { flex: 1; min-width: 0; }
+.prep-row__head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--space-8); }
+.prep-row__dish { font-weight: var(--fw-semibold); font-size: var(--fs-body-l); line-height: 24px; }
+.prep-row__line { margin-top: 2px; font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
+.prep-row.is-done .prep-row__dish, .prep-row.is-done .prep-row__line { color: var(--text-tertiary); }
+.prep-sheet__foot { display: flex; align-items: center; gap: var(--space-12); width: 100%; }
+.prep-sheet__foot > .btn:first-child { flex: 1; }
+.prep-row.is-done .tag--guide { display: none; }
+
+/* Usability round · Planned day: photo card (2 info lines, Make this), family card next, then the rest */
+.planned-card__line { font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
+.planned-card__tip { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-tertiary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.planned-card__art { height: 150px; background: var(--bg-sunken); }
+.planned-card__art svg { width: 120px; height: 120px; }
+.decide-card--solo { padding: var(--space-12); }
+.decide-card--solo .start-card { box-shadow: none; }
+.decide-card--rest { padding-top: var(--space-16); }
+.decide-card--rest .decide-card__starts { margin-top: var(--space-12); }
+
+/* Usability round · What's at home: last list, snacks at home */
+.home__last { margin: var(--space-4) 0 var(--space-12); }
+.home__last:empty { display: none; }
+.snack-stock { padding: 0 var(--space-16); }
+.snack-stock__row { display: flex; flex-direction: column; gap: var(--space-8); padding: var(--space-12) 0; }
+.snack-stock__row + .snack-stock__row { border-top: 1px solid var(--border-subtle); }
+.snack-stock__name { display: flex; flex-direction: column; font-weight: var(--fw-semibold); }
+.segmented--s .segmented__opt { min-height: 40px; font-size: var(--fs-body-m); }
+
+/* ---------- Your own dish (usability round) ---------- */
+.dish-plate svg { width: 100%; height: 100%; }
+.dish-plate { padding: 4px; }
+.recipe__img--plate svg { width: 120px; height: 120px; }
+.field__control--area { padding: var(--space-12) var(--space-16); align-items: stretch; }
+.field__input--area { height: auto; min-height: 96px; resize: vertical; line-height: var(--lh-body-m); padding: 0; }
+.dish-notes__label { display: block; margin-bottom: var(--space-12); color: var(--text-primary); }
+.own-dish-wrap { margin-top: var(--space-16); }
+.own-dish { width: 100%; text-align: left; }
+.own-dish .use-row__img--icon { width: 56px; height: 56px; }
+.own-dish__name { color: var(--text-primary); margin-bottom: var(--space-4); }
+.own-dish__foot { display: contents; }
+
+/* ---------- Shopping rows: tick = bought · "for Wed …" → Swap that dish · Have it ---------- */
+.check-list > .shop-row + .shop-row { border-top: 1px solid var(--border-subtle); }
+.shop-row { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-8) var(--space-12) var(--space-8) var(--space-16); }
+.shop-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.shop-row__check { display: flex; align-items: center; gap: var(--space-12); width: 100%; min-height: 44px; text-align: left; font-size: var(--fs-body-l); line-height: var(--lh-body-l); color: var(--text-primary); }
+.shop-row__check .row__label { flex: 0 1 auto; }
+.shop-row__qty { font-size: var(--fs-body-m); color: var(--text-secondary); white-space: nowrap; }
+.shop-row__check.is-leaving { opacity: 0.4; transition: opacity var(--dur-base); }
+.shop-row__sub { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-8); padding-left: 36px; margin-top: -6px; }
+.shop-row__for { font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
+.shop-row__for--btn { display: inline-flex; align-items: center; gap: 2px; min-height: 32px; text-align: left; text-decoration: underline; text-decoration-color: var(--border-control); text-underline-offset: 3px; }
+.shop-row__for--btn svg { width: 16px; height: 16px; flex: none; }
+.shop-row__for--btn:hover { color: var(--text-primary); }
+.shop-row__have { flex: none; min-height: 44px; }
+
+/* ---------- Learn: source placeholder, Ask other parents (coming soon) ---------- */
+.source__todo { font-style: italic; }
+.community-row .row__label { align-items: flex-start; }
+.community-row__tag { margin-top: var(--space-4); }
+.soon { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-8); padding: var(--space-8) 0 var(--space-4); }
+.soon__art { margin-bottom: var(--space-8); }
+.soon__title { color: var(--text-primary); }
+.soon__body { color: var(--text-secondary); max-width: 30ch; }
+
+/* ---------- Helper view, voice first (usability round) ---------- */
+/* listenButton(): speaker + the word in her language, 56 px, brand green ("the green speaker"). */
+.listen-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-12); width: 100%; min-height: 56px; padding: 0 var(--space-20); border-radius: var(--radius-full); background: var(--brand-primary); color: var(--text-on-brand); font-size: 20px; line-height: 26px; font-weight: var(--fw-semibold); }
+.listen-btn svg { width: 28px; height: 28px; }
+.listen-btn.is-speaking { background: var(--bg-surface); color: var(--brand-primary); box-shadow: inset 0 0 0 2px var(--brand-primary); }
+.listen-btn:focus-visible { outline: 3px solid var(--focus-ring, var(--brand-primary)); outline-offset: 3px; }
+.carer-listen { margin: var(--space-16) 0; }
+/* The line being read aloud */
+.is-reading { outline: 3px solid var(--brand-primary); outline-offset: 4px; border-radius: var(--radius-md); background-color: var(--highlight); transition: background-color var(--dur-fast); }
+.carer-photo--art { display: grid; place-items: center; background: var(--tile-icon-bg); }
+.carer-photo--art svg { width: 120px; height: 120px; }
+.carer-prep { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-16); }
+.carer-prep .msg { font-size: 18px; line-height: 26px; }
+.outcomes.is-pointed { outline: 3px solid var(--brand-primary); outline-offset: 6px; border-radius: var(--radius-card); }
+
+/* micButton({ size: 'xl' }): the big helper mic, 72 px, shown before any text box. */
+.mic-xl { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: var(--brand-primary); color: var(--text-on-brand); box-shadow: var(--shadow-card, 0 2px 8px rgb(0 0 0 / 0.12)); }
+.mic-xl svg { width: 34px; height: 34px; }
+.mic-xl.is-listening { background: var(--error-fg, #b3261e); }
+.mic-xl:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 4px; }
+.mic-wrap { position: relative; display: grid; place-items: center; width: 112px; height: 112px; margin: 0 auto; }
+.mic-wrap.is-hinting::before { content: ''; position: absolute; inset: 8px; border-radius: 50%; border: 3px solid var(--brand-primary); opacity: 0.55; animation: mic-ring 1.6s ease-out infinite; }
+.mic-hint { position: absolute; right: -14px; bottom: -6px; width: 40px; height: 40px; color: var(--text-primary); transform: rotate(-20deg); animation: mic-finger 1.6s ease-in-out infinite; }
+.mic-hint svg { width: 40px; height: 40px; }
+@keyframes mic-ring { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.25); opacity: 0; } }
+@keyframes mic-finger { 0%, 100% { transform: translate(0, 0) rotate(-20deg); } 50% { transform: translate(-6px, -6px) rotate(-20deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .mic-wrap.is-hinting::before { animation: none; transform: none; opacity: 0.7; }
+  .mic-hint { animation: none; }
+  .soundbar span { animation: none !important; }
+}
+
+.carer-tell { margin-top: var(--space-24); padding: var(--space-20) var(--space-16); }
+.carer-tell__title { font-size: 20px; line-height: 28px; font-weight: var(--fw-semibold); text-align: center; color: var(--text-primary); }
+.carer-tell__stage { display: flex; flex-direction: column; align-items: center; gap: var(--space-12); margin-top: var(--space-12); text-align: center; }
+.carer-tell__stage > .btn, .carer-tell__type { width: 100%; }
+.carer-tell__type { display: flex; flex-direction: column; gap: var(--space-8); }
+.carer-tell__cap { font-size: 18px; line-height: 26px; color: var(--text-secondary); }
+.carer-tell__msg { font-size: 18px; line-height: 26px; color: var(--text-primary); }
+.carer-tell__listening { font-size: 24px; line-height: 32px; font-weight: var(--fw-semibold); color: var(--text-primary); }
+.carer-tell__said { font-size: 22px; line-height: 30px; font-weight: var(--fw-semibold); color: var(--text-primary); }
+.carer-tell__clock { font-size: 18px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.carer-tell__or { min-height: 44px; }
+.soundbar { display: flex; align-items: center; gap: 6px; height: 40px; }
+.soundbar span { width: 6px; height: 12px; border-radius: 3px; background: var(--brand-primary); animation: soundbar 0.9s ease-in-out infinite; }
+.soundbar span:nth-child(2) { animation-delay: 0.15s; } .soundbar span:nth-child(3) { animation-delay: 0.3s; }
+.soundbar span:nth-child(4) { animation-delay: 0.45s; } .soundbar span:nth-child(5) { animation-delay: 0.6s; }
+@keyframes soundbar { 0%, 100% { height: 10px; } 50% { height: 36px; } }
+.big-tick, .big-stop { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: var(--brand-primary); color: var(--text-on-brand); }
+.big-tick svg { width: 36px; height: 36px; stroke-width: 3; }
+.big-stop svg { width: 30px; height: 30px; }
+.big-tick:focus-visible, .big-stop:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 4px; }
+
+/* Voice note playback (helper preview, and the parent in Memory) */
+.voice-play { display: inline-flex; align-items: center; gap: var(--space-8); min-height: 44px; padding: 0 var(--space-16); border-radius: var(--radius-full); background: var(--bg-sunken); color: var(--text-primary); font-size: var(--fs-body-m); font-weight: var(--fw-semibold); }
+.voice-play svg { width: 18px; height: 18px; color: var(--brand-primary); }
+.voice-play--carer { min-height: 56px; font-size: 18px; }
+.helper-notes { display: flex; flex-direction: column; gap: var(--space-8); padding: 0 0 var(--space-12) 52px; }
+.helper-note { display: flex; gap: var(--space-8); align-items: flex-start; }
+.helper-note__icon svg { width: 18px; height: 18px; color: var(--text-secondary); margin-top: 3px; }
+.helper-note__body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.helper-note__text { color: var(--text-primary); }
+.person__voice { margin-top: var(--space-4); font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-secondary); }

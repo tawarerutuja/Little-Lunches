@@ -1,9 +1,11 @@
 /* ==========================================================================
    Little Plate · design tokens
-   Source of truth: Figma "Mood board" → Design System · Parents Planner v1.2
-   (Option 6: Curry leaf fresh). Values copied from the Figma variables (PP/*).
-   Rule from the DS: 60% rice white and herb neutrals, 30% surfaces and
-   jaggery notes, 10% curry leaf green for the one action that matters.
+   Source of truth: Figma "Mood board" → Design System · Parents Planner v1.3
+   (after usability testing; v1.2 Curry leaf fresh + one meaning per colour,
+   type roles, message roles and new meal colours). Values from the Figma variables (PP/*).
+   Rule from the DS: 60% rice white and herb neutrals, 30% surfaces, 10% curry leaf
+   green for the one action that matters. v1.3: jaggery only for Attention messages,
+   the "Ate some" data mark, Phulka discs and illustrations.
    Older token names are kept as aliases so every screen picks up the new look.
    ========================================================================== */
 
@@ -21,6 +23,7 @@
   --herb-400: #a3aea5;
   --herb-500: #788679;
   --herb-600: #5a6a5e;
+  --herb-650: #66756a;         /* v1.3 meta text: 4.7:1 on rice white, clearly lighter than help text */
   --herb-700: #4a5a4e;
   --herb-900: #1c2a20;
   --jaggery-50: #fdf1e4;
@@ -42,6 +45,11 @@
   --sky-600: #2f5a84;
   --sky-700: #244666;
   --white: #ffffff;
+  /* v1.3 meal colours: their own muted food colours (meals no longer borrow brand, warning or info) */
+  --turmeric-100: #f8efcf;  --turmeric-800: #6a5312;  /* haldi · breakfast · 6.4:1 */
+  --methi-100: #e3f1ee;     --methi-800: #1f5c52;     /* methi · lunch · 6.7:1 */
+  --chikoo-100: #f8e6e8;    --chikoo-800: #7d2f3e;    /* chikoo rose · snack · 7.4:1 */
+  --jamun-100: #ece8f5;     --jamun-800: #4a3a78;     /* jamun · dinner · 8.0:1 */
   --wheat: #e8c98e;           /* the roti in the logo: kept, it is the brand character */
 
   /* ---- Legacy names → Option 6 (used across components) ---- */
@@ -178,7 +186,7 @@
 
   --text-primary: var(--herb-900);
   --text-secondary: var(--herb-700);
-  --text-tertiary: var(--herb-600);
+  --text-tertiary: var(--herb-650);
   --text-disabled: var(--herb-400);
   --text-on-brand: var(--white);
   --text-link: var(--curryleaf-700);
@@ -194,9 +202,18 @@
   --brand-primary-subtle: var(--curryleaf-100);
   --brand-on-subtle: var(--curryleaf-800);
 
-  --note-bg: var(--jaggery-100);
-  --note-border: var(--jaggery-200);
-  --note-icon: var(--jaggery-600);
+  /* v1.3 message roles: one meaning each */
+  --msg-neutral-bg: var(--white);        --msg-neutral-border: var(--herb-200);   --msg-neutral-fg: var(--herb-900);
+  --msg-guide-bg: var(--curryleaf-100);  --msg-guide-fg: var(--curryleaf-700);   /* next step, done, "Needs tonight" */
+  --msg-attention-bg: var(--jaggery-50); --msg-attention-border: var(--jaggery-200); --msg-attention-fg: var(--jaggery-700); /* time-bound, max 1 per screen */
+  --msg-danger-bg: var(--chilli-50);     --msg-danger-border: var(--chilli-allergy); --msg-danger-fg: var(--chilli-allergy); /* allergies only */
+  --msg-info-bg: var(--sky-50);          --msg-info-fg: var(--sky-700);
+  --msg-notice-bg: var(--ricewhite-50);  --msg-notice-border: var(--herb-200);    /* calm facts: refusals, backups */
+
+  /* Notes are now the calm Notice role (were jaggery) */
+  --note-bg: var(--msg-notice-bg);
+  --note-border: var(--msg-notice-border);
+  --note-icon: var(--herb-700);
   --success-fg: var(--curryleaf-700);
   --success-bg: var(--curryleaf-50);
   --success-icon: var(--curryleaf-600);
@@ -219,8 +236,8 @@
   --seg-track: var(--ricewhite-50);
   --seg-thumb: var(--white);
   --skeleton: var(--ricewhite-50);
-  --tile-icon-bg: var(--jaggery-50);
-  --tile-icon-fg: var(--jaggery-700);
+  --tile-icon-bg: var(--ricewhite-50);  /* v1.3: icon tiles are neutral, not jaggery */
+  --tile-icon-fg: var(--herb-700);
   --icon-btn-bg: var(--ricewhite-50);
 
   /* Logo (A6 roti on a rice-white plate, ink rim, tomato cheeks at 55%) */
@@ -234,14 +251,14 @@
   --chrome-ink: var(--herb-900);
 
   /* Meals: calm, neutral badges; the icon shape tells the meal (never colour alone) */
-  --meal-breakfast-bg: var(--jaggery-50);
-  --meal-breakfast-fg: var(--jaggery-700);
-  --meal-lunch-bg: var(--curryleaf-50);
-  --meal-lunch-fg: var(--curryleaf-700);
-  --meal-snack-bg: var(--jaggery-100);
-  --meal-snack-fg: var(--jaggery-600);
-  --meal-dinner-bg: var(--sky-50);
-  --meal-dinner-fg: var(--sky-700);
+  --meal-breakfast-bg: var(--turmeric-100);
+  --meal-breakfast-fg: var(--turmeric-800);
+  --meal-lunch-bg: var(--methi-100);
+  --meal-lunch-fg: var(--methi-800);
+  --meal-snack-bg: var(--chikoo-100);
+  --meal-snack-fg: var(--chikoo-800);
+  --meal-dinner-bg: var(--jamun-100);
+  --meal-dinner-fg: var(--jamun-800);
 
   /* Outcomes (outcome/*) */
   --outcome-well: var(--curryleaf-600);
@@ -256,10 +273,10 @@
   --phulka-searching: var(--jaggery-100);
   --phulka-saved: var(--curryleaf-100);
 
-  --start-family-bg: var(--jaggery-50);   /* T01: cooking = warm jaggery */
-  --start-home-bg: var(--curryleaf-50);   /* T01: pantry = curry leaf */
+  --start-family-bg: var(--ricewhite-50);  /* v1.3: calm surfaces; the illustrations carry the warmth */
+  --start-home-bg: var(--ricewhite-50);
   --sand: var(--ricewhite-50);
-  --highlight: var(--jaggery-50);
+  --highlight: var(--curryleaf-50);   /* v1.3: highlight rows use the Guide tint, not jaggery */
 
   /* ---- Aliases required by the master prompt ---- */
   --bg-card: var(--bg-surface);
@@ -298,7 +315,7 @@
 
   --text-primary: #eef3ee;
   --text-secondary: #c9d3ca;
-  --text-tertiary: #a6b3a8;
+  --text-tertiary: #9eaca1;
   --text-disabled: #6f7d72;
   --text-on-brand: #ffffff;
   --text-link: #9bd3ad;
@@ -314,9 +331,15 @@
   --brand-primary-subtle: #1f3a28;
   --brand-on-subtle: #c8ead2;
 
-  --note-bg: #3a2a18;
-  --note-border: #6b4a20;
-  --note-icon: #f0b27a;
+  --msg-neutral-bg: #1b231d;   --msg-neutral-border: #2f3b32;   --msg-neutral-fg: #eef3ee;
+  --msg-guide-bg: #1f3a28;     --msg-guide-fg: #c8ead2;
+  --msg-attention-bg: #33261a; --msg-attention-border: #6b4a20; --msg-attention-fg: #f3c79a;
+  --msg-danger-bg: #3b1f1b;    --msg-danger-border: #ef7a6e;    --msg-danger-fg: #ff9d92;
+  --msg-info-bg: #1b2a38;      --msg-info-fg: #b9d5ef;
+  --msg-notice-bg: #232d25;    --msg-notice-border: #2f3b32;
+  --note-bg: var(--msg-notice-bg);
+  --note-border: var(--msg-notice-border);
+  --note-icon: #c9d3ca;
   --success-fg: #a9dcb8;
   --success-bg: #1a2e21;
   --success-icon: #9bd3ad;
@@ -338,8 +361,8 @@
   --seg-track: #232d25;
   --seg-thumb: #3a473d;
   --skeleton: #232d25;
-  --tile-icon-bg: #33261a;
-  --tile-icon-fg: #f3c79a;
+  --tile-icon-bg: #263028;
+  --tile-icon-fg: #c9d3ca;
   --icon-btn-bg: #263028;
 
   --logo-plate: #fafaf5;
@@ -351,14 +374,14 @@
 
   --chrome-ink: #eef3ee;
 
-  --meal-breakfast-bg: #33261a;
-  --meal-breakfast-fg: #f3c79a;
-  --meal-lunch-bg: #1a2e21;
-  --meal-lunch-fg: #a9dcb8;
-  --meal-snack-bg: #3a2a18;
-  --meal-snack-fg: #f0b27a;
-  --meal-dinner-bg: #1b2a38;
-  --meal-dinner-fg: #b9d5ef;
+  --meal-breakfast-bg: #3a3216;
+  --meal-breakfast-fg: #f0dc9a;
+  --meal-lunch-bg: #17302b;
+  --meal-lunch-fg: #a8dccf;
+  --meal-snack-bg: #3a2026;
+  --meal-snack-fg: #f2b8c2;
+  --meal-dinner-bg: #2a2540;
+  --meal-dinner-fg: #cdc3ef;
 
   --outcome-well: #9bd3ad;
   --outcome-some: #f0b27a;
@@ -371,8 +394,8 @@
   --phulka-searching: #3a2a18;
   --phulka-saved: #1f3a28;
 
-  --start-family-bg: #2e2418;
-  --start-home-bg: #1b2a20;
+  --start-family-bg: #232d25;
+  --start-home-bg: #232d25;
   --sand: #232d25;
-  --highlight: #33261a;
+  --highlight: #1a2e21;
 }

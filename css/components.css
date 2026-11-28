@@ -572,7 +572,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 .segmented__opt[aria-checked="true"] { color: var(--text-primary); }
 
 /* ---------- Section header (sub-title + helper) ---------- */
-.section { margin-top: var(--space-24); }
+.section { margin-top: var(--space-40); }  /* v1.3: 40 px above a section */
 
 /* ---------- Notes and alerts ---------- */
 .note {
@@ -582,7 +582,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
   padding: var(--space-12);
   border-radius: var(--radius-md);
   background: var(--note-bg);
-  color: var(--warning-fg);
+  color: var(--text-primary);   /* v1.3 Notice: a calm fact, not a warning */
   font-size: var(--fs-body-m);
   line-height: var(--lh-body-m);
 }
@@ -604,10 +604,10 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
   font-size: var(--fs-caption);
   line-height: var(--lh-caption);
   font-weight: var(--fw-semibold);
-  background: var(--success-bg);
-  color: var(--success-fg);
+  background: var(--bg-sunken);      /* v1.3 Status tag: neutral by default */
+  color: var(--text-secondary);
 }
-.tag--wip { background: var(--warning-bg); color: var(--warning-fg); }
+.tag--wip { background: var(--bg-sunken); color: var(--text-secondary); }
 
 /* ---------- Spinner + skeleton ---------- */
 .spinner {
@@ -648,8 +648,8 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
   width: 72px; height: 72px;
   border-radius: var(--radius-full);
   display: grid; place-items: center;
-  background: var(--warning-bg);
-  color: var(--note-icon);
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
   margin-bottom: var(--space-16);
 }
 .state__icon svg { width: var(--size-icon-empty); height: var(--size-icon-empty); }
@@ -1028,10 +1028,10 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 
 /* ---------- Tags, strips, alerts ---------- */
 .tag-row { display: flex; flex-wrap: wrap; gap: var(--space-8); }
-.tag--best { background: var(--highlight); color: var(--warning-fg); }
+.tag--best { background: var(--msg-guide-bg); color: var(--msg-guide-fg); }   /* Guide */
 .tag--safe { background: var(--success-bg); color: var(--success-fg); }
-.tag--busy { background: var(--warning-bg); color: var(--warning-fg); }
-.tag--prep { background: var(--highlight); color: var(--warning-fg); }
+.tag--busy { background: var(--bg-sunken); color: var(--text-secondary); }     /* Status */
+.tag--prep { background: var(--msg-guide-bg); color: var(--msg-guide-fg); }   /* Guide: Needs tonight */
 .tag--meal-breakfast { background: var(--meal-breakfast-bg); color: var(--meal-breakfast-fg); }
 .tag--meal-lunch { background: var(--meal-lunch-bg); color: var(--meal-lunch-fg); }
 .tag--meal-snack { background: var(--meal-snack-bg); color: var(--meal-snack-fg); }
@@ -1060,7 +1060,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 .eyebrow--lunch { color: var(--meal-lunch-fg); }
 .eyebrow--snack { color: var(--meal-snack-fg); }
 .eyebrow--dinner { color: var(--meal-dinner-fg); }
-.eyebrow--note { color: var(--warning-fg); }
+.eyebrow--note { color: var(--text-secondary); }
 
 /* ---------- Avatars ---------- */
 .avatar--wheat { background: var(--haldi-100); color: var(--haldi-700); }
@@ -1082,7 +1082,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 .dialog__stack { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-20); }
 
 /* ---------- Chips: missing ingredient, meal chips, heard words ---------- */
-.chip--missing[aria-pressed="true"] { background: var(--highlight); color: var(--warning-fg); box-shadow: inset 0 0 0 1.5px var(--note-border); }
+.chip--missing[aria-pressed="true"] { background: var(--bg-sunken); color: var(--text-primary); box-shadow: inset 0 0 0 1.5px var(--border-control); }
 .chip__meal { display: grid; }
 .chip__meal--breakfast { color: var(--meal-breakfast-fg); }
 .chip__meal--lunch { color: var(--meal-lunch-fg); }
@@ -1158,7 +1158,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 /* ---------- Testing round: new states and micro-interactions ---------- */
 .strip--danger { background: var(--error-bg); color: var(--error-fg); }
 .strip--danger svg { color: var(--error-icon); }
-.strip--warn { background: var(--warning-bg); color: var(--warning-fg); }
+.strip--warn { background: var(--msg-notice-bg); color: var(--text-primary); }  /* v1.3 Notice */
 .strip--warn svg { color: var(--note-icon); }
 .avatar--icon svg { width: 22px; height: 22px; }
 
@@ -1233,7 +1233,7 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 .start-card[aria-disabled="true"] .start-card__art { background: var(--bg-sunken); color: var(--text-disabled); }
 
 /* Round 7 · "New · adds spinach" — a twist on a food he accepts (info tone, not a warning) */
-.tag--new { background: var(--info-bg); color: var(--info-fg); }
+.tag--new { background: var(--msg-guide-bg); color: var(--msg-guide-fg); }    /* Guide */
 .idea-row .tag { align-self: flex-start; margin-bottom: 2px; }
 /* Error toast: same dark surface, a red edge and icon so it never reads as "saved" */
 .toast--error { box-shadow: inset 4px 0 0 #ef7a6e, var(--shadow-3, 0 8px 24px rgba(0,0,0,.18)); }
@@ -1247,6 +1247,59 @@ button.row:active, .row--tappable:active { background: var(--bg-sunken); }
 .month-grid .chip__mark { position: absolute; left: var(--space-8); top: 50%; transform: translateY(-50%); display: flex; }
 .month-grid .chip__mark svg { width: 16px; height: 16px; }
 
-/* Round 15 · Form sections: one page title + lead, then quiet labels (no stacked headings) */
-.form-section { margin-top: var(--space-32); }
-.form-section__label { margin-bottom: var(--space-12); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); text-transform: uppercase; font-weight: var(--fw-semibold); color: var(--text-secondary); }
+
+/* ==========================================================================
+   Design system v1.3 (after usability testing)
+   ========================================================================== */
+/* ---- Type roles ---- */
+.t-section-title { font-family: var(--font-body); font-size: 18px; line-height: 24px; font-weight: var(--fw-semibold); color: var(--text-primary); }
+.t-help { font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
+.t-meta { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-tertiary); }
+
+/* ---- Section head: optional 32 px icon tile; help text lines up with the title text ---- */
+.section-head { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; }
+.section-head__tile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--msg-guide-bg); color: var(--msg-guide-fg); }
+.section-head__tile svg { width: 18px; height: 18px; }
+.section-head .t-section-title { grid-column: 2; }
+.section-head:not(:has(.section-head__tile)) { grid-template-columns: 1fr; column-gap: 0; }
+.section-head:not(:has(.section-head__tile)) .t-section-title, .section-head:not(:has(.section-head__tile)) .t-help { grid-column: 1; }
+.section-head .t-help { grid-column: 2; margin-top: var(--space-4); }
+.section-head + * { margin-top: var(--space-16); }
+.section-head:not(:has(.t-help)) + * { margin-top: var(--space-12); }
+
+/* ---- Message family: one shape (radius 16, padding 16, 32 px tile), colour = meaning ---- */
+.msg { display: grid; grid-template-columns: 32px 1fr auto; column-gap: 12px; align-items: start; padding: var(--space-16); border-radius: var(--radius-lg); background: var(--msg-neutral-bg); color: var(--msg-neutral-fg); box-shadow: inset 0 0 0 1px var(--msg-neutral-border); }
+.msg__tile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--msg-guide-bg); color: var(--msg-guide-fg); }
+.msg__tile svg { width: 18px; height: 18px; }
+.msg__main { min-width: 0; display: flex; flex-direction: column; }
+.msg__tags { display: flex; flex-wrap: wrap; gap: var(--space-8); margin-bottom: var(--space-4); }
+.msg__title { font-family: var(--font-body); font-size: 18px; line-height: 24px; font-weight: var(--fw-semibold); }
+.msg__body { margin-top: 2px; font-size: var(--fs-body-m); line-height: var(--lh-body-m); color: var(--text-secondary); }
+.msg__meta { margin-top: var(--space-4); font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-tertiary); }
+.msg__actions { display: flex; flex-wrap: wrap; gap: var(--space-8); margin-top: var(--space-12); }
+.msg__see { display: inline-flex; align-items: center; gap: 2px; align-self: flex-start; min-height: 44px; margin: var(--space-4) 0 calc(var(--space-12) * -1); font-weight: var(--fw-semibold); color: var(--text-link); }
+.msg__see svg { width: 16px; height: 16px; }
+.msg__tick { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: var(--radius-full); background: var(--bg-surface); color: var(--text-primary); box-shadow: inset 0 0 0 1.5px var(--border-control); transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast); }
+.msg__tick svg { width: 20px; height: 20px; }
+.msg__tick:active { transform: scale(0.92); }
+.msg__tick[aria-pressed="true"] { background: var(--brand-primary); color: var(--text-on-brand); box-shadow: none; }
+.msg--notice { background: var(--msg-notice-bg); box-shadow: none; }
+.msg--notice .msg__tile { background: var(--bg-surface); color: var(--text-secondary); }
+.msg--attention { background: var(--msg-attention-bg); box-shadow: inset 0 0 0 1px var(--msg-attention-border); }
+.msg--attention .msg__tile { background: var(--bg-surface); color: var(--msg-attention-fg); }
+.msg--attention .msg__title { color: var(--msg-attention-fg); }
+.msg--danger { background: var(--msg-danger-bg); box-shadow: inset 0 0 0 1px var(--msg-danger-border); }
+.msg--danger .msg__tile { background: var(--bg-surface); color: var(--msg-danger-fg); }
+.msg--danger .msg__title { color: var(--msg-danger-fg); }
+.msg--info { background: var(--msg-info-bg); box-shadow: none; }
+.msg--info .msg__tile { background: var(--bg-surface); color: var(--msg-info-fg); }
+.msg--info .msg__title { color: var(--msg-info-fg); }
+/* Done: one quiet line on the sunken surface with a green check */
+.msg--done { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) var(--space-16); background: var(--bg-sunken); box-shadow: none; color: var(--msg-guide-fg); font-weight: var(--fw-medium); }
+.msg--done svg { width: 20px; height: 20px; flex: none; color: var(--success-icon); }
+
+/* ---- Tags: Meal (meal colours) · Status (neutral) · Guide ---- */
+.tag--status { background: var(--bg-sunken); color: var(--text-secondary); }
+.tag--guide { background: var(--msg-guide-bg); color: var(--msg-guide-fg); }
+/* Screen title → first section stays 24 px; 40 px only between sections */
+.screen-title + .section, .screen-lead + .section { margin-top: var(--space-24); }
